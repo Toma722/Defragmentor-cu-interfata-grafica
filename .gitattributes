@@ -6,3 +6,10 @@ CMakeFiles/ linguist-generated
 
 *.md linguist-documentation
 *.txt linguist-documentation
+
+tastatura.txt linguist-documentation
+data.txt linguist-documentation
+*.log linguist-documentation
+
+*.vcxproj linguist-documentation
+*.sln linguist-documentation
