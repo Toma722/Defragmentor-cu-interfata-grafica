@@ -1,1 +1,8 @@
-ext/** linguist-vendored
+.idea/ linguist-vendored
+
+cmake-build-debug/ linguist-generated
+CMakeCache.txt linguist-generated
+CMakeFiles/ linguist-generated
+
+*.md linguist-documentation
+*.txt linguist-documentation
