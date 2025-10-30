@@ -2,6 +2,7 @@
 #include "File.h"
 #include "DiskSpaceMap.h"
 #include "AllcoationTable.h"
+#include "Test.h"
 
 //DEFRAGMENTORUL per se nu este inca implementat
 //de pus liste de initializare
@@ -39,5 +40,9 @@ int main() {
     std::cout<< "Afisare table si disk: " << std::endl;
     std::cout<< table << std::endl;
     std::cout<< disk << std::endl;
+
+    Test::testEmpty();
+    Test::testMove();
+    Test::testCopy(disk, table);
 
 }

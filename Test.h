@@ -38,9 +38,9 @@ class Test {
             }
 
             std::cout<<"Originalul (3 fisiere): " << std::endl;
-            std::cout<< table << std::endl;
-            std::cout<< "Copia: (4 fisiere)" << std::endl;
             std::cout<< copyTable << std::endl;
+            std::cout<< "Copia: (4 fisiere)" << std::endl;
+            std::cout<< table << std::endl;
 
             std::cout<< "Test op=: " << std::endl;
             AllocationTable table2("Test");
