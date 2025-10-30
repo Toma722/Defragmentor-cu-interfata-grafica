@@ -10,14 +10,6 @@
 
 class Test {
     public:
-        static void testEmpty() {
-            std::cout<< "TESTE(cc, cm, op...): " << std::endl;
-            File emptyFile(800, 0, "gol.txt");
-            File copyEmptyFile = emptyFile; //cc
-            copyEmptyFile = emptyFile; //operator
-            File moveEmptyFile = std::move(emptyFile);//cm
-            std::cout << "Testul cm pe file_gol a reusit. Stare file_gol: " << emptyFile << std::endl;
-        }
 
         static void testMove() {
             std::cout << "Test cm: " << std::endl;
@@ -29,7 +21,7 @@ class Test {
             std::cout << "Dupa mutare(file99 -> ar trebui sa fie gol): " << file99 << std::endl;
         }
 
-        static void testCopy(DiskSpaceMap &disk, AllocationTable &table) {
+        static void testCopy(const DiskSpaceMap &disk, AllocationTable &table) {
             std::cout<< "Test Copy: " << std::endl;
 
             AllocationTable copyTable = table;
