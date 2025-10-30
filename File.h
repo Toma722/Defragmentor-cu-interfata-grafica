@@ -82,17 +82,20 @@ class File {
             return *this;
         }
 
-
-        [[nodiscard]] int getId() const {
-            return this->id;
-        }
-
         ~File() {
             delete[] this->fileBlocks;
         }
 
         [[nodiscard]] int getNumBlocks() const {
             return this->numBlocks;
+        }
+
+        [[nodiscard]] int getId() const {
+            return this->id;
+        }
+
+        [[nodiscard]] const std::string &getName() const {
+            return this->name;
         }
 
         friend std::ostream &operator<<(std::ostream &os, const File &file) {

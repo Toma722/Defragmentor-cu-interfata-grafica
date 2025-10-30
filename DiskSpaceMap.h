@@ -105,6 +105,9 @@ class DiskSpaceMap {
             os<<"DiskSpaceMap: "<<diskSpaceMap.totalBlocks<<"total blocks -> ";
             for (int i = 0; i < diskSpaceMap.totalBlocks; i++) {
                 os<<diskSpaceMap.diskBlocks[i]<<" ";
+                if (i % 10 == 0) {
+                    os<<std::endl;
+                }
             }
             return os;
         }
