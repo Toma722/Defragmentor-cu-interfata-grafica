@@ -97,6 +97,14 @@ class DiskSpaceMap {
             return true;
         }
 
+        [[nodiscard]] int getNumBlocks() const {
+            return this->totalBlocks;
+        }
+
+        [[nodiscard]] const Block &getBlock(int index) const {
+            return this->diskBlocks[index];
+        }
+
         ~DiskSpaceMap() {
             delete[] this->diskBlocks;
         }

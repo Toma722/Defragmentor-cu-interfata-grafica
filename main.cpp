@@ -3,6 +3,7 @@
 #include "DiskSpaceMap.h"
 #include "AllcoationTable.h"
 #include "Test.h"
+#include "GUI.h"
 
 //DEFRAGMENTORUL per se nu este inca implementat
 //de pus liste de initializare
@@ -14,6 +15,7 @@
 int main() {
     DiskSpaceMap disk(32);
     AllocationTable table("FAT32", 2);
+    GUI gui(disk);
 
     File file1(101, 5, "doc.txt");
     File file2(102, 8, "driver.dll");
@@ -43,5 +45,7 @@ int main() {
 
     Test::testMove();
     Test::testCopy(disk, table);
+
+    gui.run();
 
 }

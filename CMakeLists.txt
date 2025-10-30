@@ -14,6 +14,7 @@ include(cmake/Options.cmake)
 include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
+find_package(SFML 2.6 REQUIRED graphics window system)
 
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
@@ -27,7 +28,11 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         AllcoationTable.h
         Test.cpp
         Test.h
+        GUI.cpp
+        GUI.h
 )
+
+target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
 
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
 
