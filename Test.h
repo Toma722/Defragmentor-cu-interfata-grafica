@@ -25,6 +25,7 @@ class Test {
             std::cout<<"Inainte de mutare: " << file99 << std::endl;
             File file99Moved = std::move(file99);
             std::cout << "Dupa mutare(file99Moved): " << file99Moved << std::endl;
+            // cppcheck-suppress accessMoved
             std::cout << "Dupa mutare(file99 -> ar trebui sa fie gol): " << file99 << std::endl;
         }
 
