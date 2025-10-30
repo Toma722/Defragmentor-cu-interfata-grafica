@@ -20,7 +20,7 @@ int main() {
     File file3(103, 3, "text.txt");
     File file4(104, 20, "video.mkv");//nu o sa incapa asta
 
-    File const *filesToAllocate[4] = {&file1, &file2, &file3, &file4};
+    const File *filesToAllocate[4] = {&file1, &file2, &file3, &file4};
 
     for (const auto & i : filesToAllocate) {
         std::cout << *i << std::endl;
