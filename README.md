@@ -37,8 +37,8 @@ O cerință nu se consideră îndeplinită dacă este realizată doar prin cod g
 - [X] definirea a minim **3-4 clase** folosind compunere cu clasele definite de voi; moștenirile nu se iau în considerare aici
 - [X] constructori de inițializare cu parametri pentru fiecare clasă
 - [X] pentru o aceeași (singură) clasă: constructor de copiere, `operator=` de copiere, destructor
-<!-- - [ ] pentru o altă clasă: constructor de mutare, `operator=` de mutare, destructor -->
-<!-- - [ ] pentru o altă clasă: toate cele 5 funcții membru speciale -->
+<!-- - [X] pentru o altă clasă: constructor de mutare, `operator=` de mutare, destructor -->
+<!-- - [X] pentru o altă clasă: toate cele 5 funcții membru speciale -->
 - [X] `operator<<` pentru **toate** clasele pentru afișare (`std::ostream`) folosind compunere de apeluri cu `operator<<`
 - [X] cât mai multe `const` (unde este cazul) și funcții `private`
 - [X] implementarea a minim 3 funcții membru publice pentru funcționalități netriviale specifice temei alese, dintre care cel puțin 1-2 funcții mai complexe

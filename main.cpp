@@ -1,4 +1,6 @@
 #include <iostream>
+#include <utility>
+//DEFRAGMENTORUL per se nu este inca implementat
 //de pus liste de initializare
 //momentan simulez content si id uri
 //de implementat first-fit/best-fit/worst-fit
@@ -75,15 +77,15 @@ class File {
         explicit File(int id = 0, int size = 0, const std::string &name = "") {
             this->id = id;
             this->name = name;
-            this->fileBlocks = new Block[size];
             this->numBlocks = size;
+            this->fileBlocks = new Block[size];
 
             for (int i = 0; i < size; i++) {
-                this->fileBlocks[i].setData(i, true, this->id);
+                this->fileBlocks[i].setData(i + 1, true, this->id);
             }
         }
 
-        File(const File &other) {
+        File(const File &other) { //cc
             this->id = other.id;
             this->name = other.name;
             this->fileBlocks = new Block[other.numBlocks];
@@ -91,6 +93,17 @@ class File {
                 this->fileBlocks[i] = other.fileBlocks[i];
             }
             this->numBlocks = other.numBlocks;
+        }
+
+        File(File &&other) noexcept { //cm
+            this->fileBlocks = other.fileBlocks;
+            this->numBlocks = other.numBlocks;
+            this->id = other.id;
+            this->name = std::move(other.name);
+            other.fileBlocks = nullptr;
+            other.numBlocks = 0;
+            other.id = 0;
+            other.name = "";
         }
 
         File &operator=(const File &other) {
@@ -98,17 +111,38 @@ class File {
                 return *this;
             }
 
+            auto *tempBlocks = new Block[other.numBlocks];
+
+            for (int i = 0; i < other.numBlocks; i++) {
+                tempBlocks[i] = other.fileBlocks[i];
+            }
+
             delete[] this->fileBlocks;
+            this->fileBlocks = tempBlocks;
+            this->numBlocks = other.numBlocks;
             this->id = other.id;
             this->name = other.name;
-            this->numBlocks = other.numBlocks;
-            this->fileBlocks = new Block[other.numBlocks];
-            for (int i = 0; i < other.numBlocks; i++) {
-                this->fileBlocks[i] = other.fileBlocks[i];
-            }
 
             return *this;
         }
+
+        File &operator=(File &&other) noexcept {
+            if (this == &other) {
+                return *this;
+            }
+            delete[] this->fileBlocks;
+            this->fileBlocks = other.fileBlocks;
+            this->numBlocks = other.numBlocks;
+            this->id = other.id;
+            this->name = std::move(other.name);
+            other.fileBlocks = nullptr;
+            other.numBlocks = 0;
+            other.id = 0;
+            other.name = "";
+
+            return *this;
+        }
+
 
         [[nodiscard]] int getId() const {
             return this->id;
@@ -141,7 +175,7 @@ class DiskSpaceMap {
             this->diskBlocks = new Block[totalBlocks];
         }
 
-        DiskSpaceMap(const DiskSpaceMap &other) {
+        DiskSpaceMap(const DiskSpaceMap &other) { //cc
             this->totalBlocks = other.totalBlocks;
             this->diskBlocks = new Block[other.totalBlocks];
             for (int i = 0; i < other.totalBlocks; i++) {
@@ -149,16 +183,44 @@ class DiskSpaceMap {
             }
         }
 
+        DiskSpaceMap(DiskSpaceMap &&other) noexcept { //cm
+            this->totalBlocks = other.totalBlocks;
+            this->diskBlocks = other.diskBlocks;
+            other.diskBlocks = nullptr;
+            other.totalBlocks = 0;
+        }
+
         DiskSpaceMap &operator=(const DiskSpaceMap &other) {
             if (this == &other) {
                 return *this;
             }
-            delete[] this->diskBlocks;
-            this->totalBlocks = other.totalBlocks;
-            this->diskBlocks = new Block[other.totalBlocks];
+
+            auto *tempBlocks = new Block[other.totalBlocks];
+
+
+
             for (int i = 0; i < other.totalBlocks; i++) {
-                this->diskBlocks[i] = other.diskBlocks[i];
+                tempBlocks[i] = other.diskBlocks[i];
             }
+
+            delete[] this->diskBlocks;
+
+            this->diskBlocks = tempBlocks;
+            this->totalBlocks = other.totalBlocks;
+
+            return *this;
+        }
+
+        DiskSpaceMap &operator=(DiskSpaceMap &&other) noexcept {
+            if (this == &other) {
+                return *this;
+            }
+
+            delete[] this->diskBlocks;
+            this->diskBlocks = other.diskBlocks;
+            this->totalBlocks = other.totalBlocks;
+            other.diskBlocks = nullptr;
+            other.totalBlocks = 0;
 
             return *this;
         }
@@ -217,7 +279,7 @@ class AllocationTable {
             int newFileCapacity = fileCapacity * 2;
             File *newFiles = new File[newFileCapacity];
             for (int i = 0; i < fileCount; i++) {
-                newFiles[i] = files[i];
+                newFiles[i] = std::move(files[i]);
             }
             delete[] files;
             files = newFiles;
@@ -232,7 +294,7 @@ class AllocationTable {
             this->formatType = type;
         }
 
-        AllocationTable(const AllocationTable &other) {
+        AllocationTable(const AllocationTable &other) { //cc
             this->fileCount = other.fileCount;
             this->formatType = other.formatType;
             this->fileCapacity = other.fileCapacity;
@@ -240,6 +302,18 @@ class AllocationTable {
             for (int i = 0; i < this->fileCount; i++) {
                 this->files[i] = other.files[i];
             }
+        }
+
+        AllocationTable(AllocationTable &&other)  noexcept { //cm
+            this->files = other.files;
+            this->fileCount = other.fileCount;
+            this->formatType = std::move(other.formatType);
+            this->fileCapacity = other.fileCapacity;
+            other.files = nullptr;
+            other.fileCount = 0;
+            other.fileCapacity = 0;
+            other.formatType = "";
+
         }
 
         AllocationTable &operator=(const AllocationTable &other) {
@@ -259,6 +333,26 @@ class AllocationTable {
             this->fileCapacity = other.fileCapacity;
             this->formatType = other.formatType;
             this->fileCount = other.fileCount;
+
+
+            return *this;
+        }
+
+        AllocationTable &operator=(AllocationTable &&other) noexcept {
+            if (this == &other) {
+                return *this;
+            }
+            delete[] this->files;
+            this->files = other.files;
+            this->fileCapacity = other.fileCapacity;
+            this->formatType = std::move(other.formatType);
+            this->fileCount = other.fileCount;
+
+            other.files = nullptr;
+            other.fileCount = 0;
+            other.fileCapacity = 0;
+            other.formatType = "";
+
 
             return *this;
         }
@@ -296,7 +390,7 @@ int main() {
     File file1(101, 5, "doc.txt");
     File file2(102, 8, "driver.dll");
     File file3(103, 3, "text.txt");
-    File file4(104, 20, "video.mkv");
+    File file4(104, 20, "video.mkv");//nu o sa incapa asta
     std::cout << file1 << std::endl << file2 << std::endl << file3 << std::endl << file4 << std::endl;
 
     std::cout<< "Incercare alocare file1" << std::endl;
@@ -342,4 +436,21 @@ int main() {
     std::cout<< "Afisare table si disk: " << std::endl;
     std::cout<< table << std::endl;
     std::cout<< disk << std::endl;
+
+    // //teste(COMENTATE DE OARECE RIDICA WARNING-URI)
+    // std::cout<< "TESTE(cc, cm, op...): " << std::endl;
+    // File emptyFile(800, 0, "gol.txt");
+    // File copyEmptyFile = emptyFile; //cc
+    // copyEmptyFile = emptyFile; //operator
+    // File moveEmptyFile = std::move(emptyFile);//cm
+    //
+    // std::cout << "Testul cm pe file_gol a reusit. Stare file_gol: " << emptyFile << std::endl;
+    //
+    // std::cout << "Test cm: " << std::endl;
+    // File file99(99, 4, "file99.txt");
+    // std::cout<<"Inainte de mutare: " << file99 << std::endl;
+    // File file99Moved = std::move(file99);
+    // std::cout << "Dupa mutare(file99Moved): " << file99Moved << std::endl;
+    // std::cout << "Dupa mutare(file99 -> ar trebui sa fie gol): " << file99 << std::endl;
+
 }
