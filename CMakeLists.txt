@@ -17,6 +17,14 @@ include(cmake/CopyHelper.cmake)
 
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
+        Block.cpp
+        Block.h
+        File.cpp
+        File.h
+        DiskSpaceMap.cpp
+        DiskSpaceMap.h
+        AllcoationTable.cpp
+        AllcoationTable.h
 )
 
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
