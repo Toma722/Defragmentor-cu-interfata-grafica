@@ -22,11 +22,11 @@ int main() {
 
     const File *filesToAllocate[4] = {&file1, &file2, &file3, &file4};
 
-    for (const auto & i : filesToAllocate) {
+    for (const File *i : filesToAllocate) {
         std::cout << *i << std::endl;
     }
 
-    for (const auto & i : filesToAllocate) {
+    for (const File *i : filesToAllocate) {
         std::cout << "Incercare alocare " << i->getName() << std::endl;
         if (disk.allocateFileBlocks(*i)) {
             table.addFile(*i);
