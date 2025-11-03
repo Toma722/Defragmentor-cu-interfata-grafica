@@ -14,7 +14,31 @@ include(cmake/Options.cmake)
 include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
-find_package(SFML 2.6 REQUIRED graphics window system)
+include(FetchContent)
+
+set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
+# din cauza SFML
+set(WARNINGS_AS_ERRORS OFF)
+
+# NOTE: Also update SFML_VERSION env var in .github/workflows/cmake.yml:33
+FetchContent_Declare(
+        SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG        2.6.2
+        # GIT_TAG        5383d2b3948f805af55c9f8a4587ac72ec5981d1 # 2.6.2
+        # GIT_TAG        origin/master
+        GIT_SHALLOW    1  # works only with branches or tags, not with arbitrary commit hashes
+)
+
+FetchContent_MakeAvailable(SFML)
+
+find_package(Threads REQUIRED)
+if(APPLE)
+elseif(UNIX)
+    find_package(X11)
+endif()
 
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
@@ -32,9 +56,11 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         GUI.h
 )
 
-target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
-
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
+
+target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
+target_link_directories(${MAIN_EXECUTABLE_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
+target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system Threads::Threads)
 
 install(TARGETS ${MAIN_EXECUTABLE_NAME} DESTINATION ${DESTINATION_DIR})
 if(APPLE)
