@@ -4,48 +4,52 @@ description: 'Install required packages'
 runs:
   using: "composite"
   steps:
-    # Common Linux dependencies
-    - name: Install common Linux Dependencies
-      if: runner.os == 'Linux'
-      uses: ./.github/actions/install-packages
-
-    - name: More Linux Dependencies
+    # --- PASUL PENTRU LINUX ---
+    - name: Install Linux Dependencies (SFML Build + Valgrind)
       shell: bash
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get install ninja-build xdotool \
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get update
+        sudo apt-get install -y \
+          ninja-build \
+          valgrind \
+          xdotool \
           openbox \
           libxkbcommon-x11-0 \
-          libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-
+          libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 \
+          libgl1-mesa-dev \
+          libx11-dev \
+          libxrandr-dev \
+          libudev-dev \
+          libopenal-dev \
+          libvorbis-dev \
+          libflac-dev \
+          libfreetype6-dev \
+          libxcursor-dev # Dependința lipsă de la eroarea anterioară
+        
         # https://github.com/llvm/llvm-project/issues/78354
         sudo sysctl vm.mmap_rnd_bits=28
 
-    # Also see https://github.com/actions/runner-images/discussions/9446#discussioncomment-8668538
+    # --- PASUL PENTRU MACOS ---
+    - name: Install macOS Dependencies (SFML)
+      shell: bash
+      if: runner.os == 'macOS'
+      run: |
+        brew install sfml
+
+    # --- PASUL PENTRU WINDOWS ---
+    - name: Install Windows Dependencies (SFML)
+      shell: bash
+      if: runner.os == 'Windows'
+      run: |
+        # Pachetul 'sfml' nu există, dar 'sfml.redist' instalează DLL-urile 
+        # și 'sfml.devel' instalează headerele/lib-urile pentru compilare.
+        choco install sfml.devel -y
+
+    # Pasul Clang (era comentat, l-am lasat comentat)
     # - name: Install Clang ${{ matrix.clang_ver }}
     #   if: runner.os == 'Linux' && matrix.runs_msan == true
-    #   # renovate: datasource=github-tags depName=nick-fields/retry versioning=loose
-    #   uses: nick-fields/retry@v3.0.2
-    #   with:
-    #     shell: bash
-    #     timeout_minutes: 5
-    #     max_attempts: 3
-    #     retry_on: error
-    #     command: |
-    #       wget https://apt.llvm.org/llvm.sh
-    #       chmod +x ./llvm.sh
-    #       sudo ./llvm.sh ${{ matrix.clang_ver }}
+    #   ...
 
-    # - name: Install libc++ (Linux Clang ${{ matrix.clang_ver }})
-    #   shell: bash
-    #   if: runner.os == 'Linux' && matrix.runs_msan == true
-    #   run: |
-    #     # sudo apt-get update
-    #     sudo apt-get install --no-install-recommends libc++-${{ matrix.clang_ver }}-dev libc++abi-${{ matrix.clang_ver }}-dev
-
-    - name: Install valgrind
-      shell: bash
-      if: runner.os == 'Linux' && matrix.runs_valgrind == true
-      run: |
-        # sudo apt-get update
-        sudo apt-get install --no-install-recommends valgrind
+    # Pasul Valgrind (era separat, l-am mutat sus in "Install Linux Dependencies")
