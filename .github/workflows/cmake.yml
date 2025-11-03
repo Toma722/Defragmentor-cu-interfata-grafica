@@ -60,6 +60,12 @@ jobs:
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
 
+      - name: Install SFML Build Dependencies (Linux)
+        shell: bash
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libudev-dev libopenal-dev libvorbis-dev libflac-dev libfreetype6-dev
+
       - name: Run cppcheck
         uses: ./.github/actions/cppcheck
 
@@ -76,6 +82,12 @@ jobs:
       - name: Checkout repo
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
+
+      - name: Install SFML Build Dependencies (Linux)
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libudev-dev libopenal-dev libvorbis-dev libflac-dev libfreetype6-dev
 
       - name: Run clang-tidy
         uses: ./.github/actions/clang-tidy
