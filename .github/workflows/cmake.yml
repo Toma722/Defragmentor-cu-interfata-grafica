@@ -60,7 +60,6 @@ jobs:
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
 
-      # === MODIFICARE: Adăugăm dependențele SFML pentru compilare ===
       - name: Install SFML Build Dependencies (Linux)
         shell: bash
         run: |
@@ -85,7 +84,6 @@ jobs:
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
 
-      # === MODIFICARE: Adăugăm dependențele SFML pentru compilare ===
       - name: Install SFML Build Dependencies (Linux)
         shell: bash
         run: |
@@ -253,26 +251,22 @@ jobs:
           path: ${{ env.ZIP_NAME }}
           retention-days: 30
 
-      # === MODIFICARE: Înlocuim 'uses:' cu 'run:' și adăugăm 'xvfb-run' ===
+      # === MODIFICARE: Am înlocuit 'uses:' înapoi și am adăugat 'xvfb-run' la script-urile de rulare ===
+      # (Presupunând că script-urile sunt 'run_valgrind.sh', 'run_asan_lsan.sh', 'run_msan.sh')
       - name: Runtime checks
         shell: bash
         run: |
-          # Pornim un ecran virtual (xvfb) doar pentru job-urile Linux
-          # care rulează executabilul (asan, msan, valgrind)
           PREFIX_CMD=""
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             PREFIX_CMD="xvfb-run -a"
           fi
-
-          # Replicăm logica din .github/actions/runtime-checks
-          # Presupunem că rulează script-urile corespunzătoare bazate pe flag-urile matrix
           
           if [[ "${{ matrix.runs_valgrind }}" == "true" ]]; then
             $PREFIX_CMD bash ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}"
           fi
           
           if [[ "${{ matrix.runs_asan }}" == "true" ]]; then
-            $PREFIX_CMD bash ./scripts/run_asan.sh "${{ env.ZIP_NAME }}"
+            $PREFIX_CMD bash ./scripts/run_asan_lsan.sh "${{ env.ZIP_NAME }}"
           fi
 
           if [[ "${{ matrix.runs_msan }}" == "true" ]]; then

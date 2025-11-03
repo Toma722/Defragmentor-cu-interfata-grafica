@@ -27,7 +27,7 @@ runs:
           libflac-dev \
           libfreetype6-dev \
           libxcursor-dev \
-          xvfb # <-- PACHETUL CHEIE (X Virtual FrameBuffer)
+          xvfb
         
         # https://github.com/llvm/llvm-project/issues/78354
         sudo sysctl vm.mmap_rnd_bits=28
@@ -44,13 +44,9 @@ runs:
       shell: bash
       if: runner.os == 'Windows'
       run: |
-        # Pachetul 'sfml' nu există, dar 'sfml.redist' instalează DLL-urile 
-        # și 'sfml.devel' instalează headerele/lib-urile pentru compilare.
         choco install sfml.devel -y
 
-    # Pasul Clang (era comentat, l-am lasat comentat)
+    # Pasul Clang (lăsat comentat cum era în șablonul tău)
     # - name: Install Clang ${{ matrix.clang_ver }}
     #   if: runner.os == 'Linux' && matrix.runs_msan == true
     #   ...
-
-    # Pasul Valgrind (era separat, l-am mutat sus in "Install Linux Dependencies")
