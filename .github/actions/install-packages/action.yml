@@ -26,7 +26,8 @@ runs:
           libvorbis-dev \
           libflac-dev \
           libfreetype6-dev \
-          libxcursor-dev # Dependința lipsă de la eroarea anterioară
+          libxcursor-dev \
+          xvfb # <-- PACHETUL CHEIE (X Virtual FrameBuffer)
         
         # https://github.com/llvm/llvm-project/issues/78354
         sudo sysctl vm.mmap_rnd_bits=28
