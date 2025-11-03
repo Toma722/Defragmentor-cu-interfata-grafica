@@ -60,13 +60,6 @@ jobs:
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
 
-      - name: Install SFML Build Dependencies (Linux)
-        shell: bash
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libudev-dev libopenal-dev libvorbis-dev libflac-dev libfreetype6-dev libxcursor-dev
-
       - name: Run cppcheck
         uses: ./.github/actions/cppcheck
 
@@ -83,13 +76,6 @@ jobs:
       - name: Checkout repo
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
-
-      - name: Install SFML Build Dependencies (Linux)
-        shell: bash
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libx11-dev libxrandr-dev libudev-dev libopenal-dev libvorbis-dev libflac-dev libfreetype6-dev libxcursor-dev
 
       - name: Run clang-tidy
         uses: ./.github/actions/clang-tidy
@@ -111,8 +97,15 @@ jobs:
       CXX: ${{ matrix.cxx }}
       VSCMD_SKIP_SENDTELEMETRY: 1
 
-      # ... (restul variabilelor 'env' rămâne la fel) ...
+      # NOTE: replace with another version if this one does not work
+      # For more versions, see https://winlibs.com or
+      # https://github.com/brechtsanders/winlibs_mingw/releases/
       MINGW_VER: "13.3.0posix-11.0.1-msvcrt-r1/winlibs-x86_64-posix-seh-gcc-13.3.0-mingw-w64msvcrt-11.0.1-r1.7z"
+      # Example:
+      # MINGW_VER: "13.3.0posix-11.0.1-ucrt-r1/winlibs-x86_64-posix-seh-gcc-13.3.0-mingw-w64ucrt-11.0.1-r1.7z"
+      # MINGW_VER: "14.1.0posix-18.1.7-12.0.0-ucrt-r2/winlibs-x86_64-posix-seh-gcc-14.1.0-mingw-w64ucrt-12.0.0-r2.7z"
+      # MINGW_VER: "14.1.0posix-18.1.7-12.0.0-msvcrt-r2/winlibs-x86_64-posix-seh-gcc-14.1.0-mingw-w64msvcrt-12.0.0-r2.7z"
+
 
     strategy:
       fail-fast: false
@@ -200,13 +193,18 @@ jobs:
         # renovate: datasource=github-tags depName=actions/checkout versioning=loose
         uses: actions/checkout@v5.0.0
 
-      # ... (Pasul 'Set timestamp' rămâne la fel) ...
       - name: Set timestamp, zip name, repo visibility
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "TIMESTAMP=$(date +%Y-%m-%d-%H-%M-%S)" >> ${GITHUB_ENV}
+
+          # use the full name as prefix: {user_name}_{repo_name} (replace / with _)
           echo "ZIP_NAME=$(echo "${GITHUB_REPOSITORY}_${{ env.BUILD_TYPE }}_${{ matrix.os }}_${{ matrix.cxx }}${{ matrix.asan_name }}" | sed 's|/|_|')" >> ${GITHUB_ENV}
+
+          # or use only the repo name (github does not have a predefined environment variable for this)
+          # the regex splits by / and keeps everything after / without the / character
+          # echo "ZIP_NAME=$(echo "${GITHUB_REPOSITORY}_${{ env.BUILD_TYPE }}_${{ matrix.os }}_${{ matrix.cxx }}${{ matrix.asan_name }}" | sed -E 's|.+/(.+)|\1|')" >> ${GITHUB_ENV}
           if [[ $(gh repo view "${{ github.repository }}" --json isPrivate -q ".isPrivate") == "true" ]]; then
               echo "PRIVATE_REPO=true" >> ${GITHUB_ENV}
           else
@@ -216,7 +214,6 @@ jobs:
       - name: Install packages
         uses: ./.github/actions/install-packages
 
-      # ... (Pașii 'Configure CMake', 'Build', 'Install', 'Move artifacts', 'Process artifacts', 'Upload Artifacts' rămân la fel) ...
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
         with:
@@ -251,27 +248,8 @@ jobs:
           path: ${{ env.ZIP_NAME }}
           retention-days: 30
 
-      # === MODIFICARE: Am înlocuit 'uses:' înapoi și am adăugat 'xvfb-run' la script-urile de rulare ===
-      # (Presupunând că script-urile sunt 'run_valgrind.sh', 'run_asan_lsan.sh', 'run_msan.sh')
       - name: Runtime checks
-        shell: bash
-        run: |
-          PREFIX_CMD=""
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            PREFIX_CMD="xvfb-run -a"
-          fi
-          
-          if [[ "${{ matrix.runs_valgrind }}" == "true" ]]; then
-            $PREFIX_CMD bash ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}"
-          fi
-          
-          if [[ "${{ matrix.runs_asan }}" == "true" ]]; then
-            $PREFIX_CMD bash ./scripts/run_asan_lsan.sh "${{ env.ZIP_NAME }}"
-          fi
-
-          if [[ "${{ matrix.runs_msan }}" == "true" ]]; then
-            $PREFIX_CMD bash ./scripts/run_msan.sh "${{ env.ZIP_NAME }}"
-          fi
+        uses: ./.github/actions/runtime-checks
 
       - name: Create release
         uses: ./.github/actions/create-release
