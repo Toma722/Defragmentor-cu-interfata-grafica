@@ -2,9 +2,8 @@
 #include <iostream>
 #include "File.h"
 
-#ifndef OOP_ALLCOATIONTABLE_H
-#define OOP_ALLCOATIONTABLE_H
-
+#ifndef OOP_ALLOCATIONTABLE_H
+#define OOP_ALLOCATIONTABLE_H
 
 class AllocationTable {
 private:
@@ -120,4 +119,4 @@ public:
 
 };
 
-#endif //OOP_ALLCOATIONTABLE_H
+#endif //OOP_ALLOCATIONTABLE_H

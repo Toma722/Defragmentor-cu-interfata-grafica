@@ -15,7 +15,7 @@ class GUI {
         sf::RectangleShape blockShape;
         DiskSpaceMap &m_disk;
 
-        void drawDiskMap() {
+        void drawDiskMap() { //functie netriviala
             int blocksPerRow = SCREEN_WIDTH / static_cast<int>(BLOCK_LENGTH);
 
             for (int i = 0; i < m_disk.getNumBlocks(); i++) {

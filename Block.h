@@ -10,9 +10,6 @@ private:
     int id, size;
     bool occupied;
     unsigned long content;
-
-    friend class File;
-    friend class DiskSpaceMap;
 public:
     explicit Block(int id = 0, int size = 0, bool occupied = false, unsigned long content = 0) {//asta e ala normalu
         this->id = id;
@@ -57,7 +54,6 @@ public:
         return this->occupied;
     }
 
-protected:
     void setData(int blockId, bool isOccupied, unsigned long fileID) {
         this->id = blockId;
         this->occupied = isOccupied;
