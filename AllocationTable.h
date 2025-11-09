@@ -26,17 +26,17 @@ public:
         return nullptr;
     }
 
-    bool createNewFile(int id, int size, const std::string &name, DiskSpaceMap &disk) {
-        File newFile(id, size, name);
-        std::vector<int> map = disk.allocateFile(newFile);
-        if (map.empty() == true) {
-            std::cout<< "Crearea fisierului " << name << " a esuat!" << std::endl;
-            return false;
-        }
-        newFile.setBlockMap(map);
-        addFile(newFile);
-        return true;
-    }
+    // bool createNewFile(int id, int size, const std::string &name, DiskSpaceMap &disk) {
+    //     File newFile(id, size, name);
+    //     std::vector<int> map = disk.allocateFile(newFile);
+    //     if (map.empty() == true) {
+    //         std::cout<< "Crearea fisierului " << name << " a esuat!" << std::endl;
+    //         return false;
+    //     }
+    //     newFile.setBlockMap(map);
+    //     addFile(newFile);
+    //     return true;
+    // }
 
     [[nodiscard]] const std::vector<File> &getFiles() {
         return files;

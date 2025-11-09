@@ -71,11 +71,11 @@ public:
         return this->isDamaged;
     }
 
-    void markAsBad() {
-        isDamaged = true;
-        occupied = true;
-        content = 0;
-    }
+    // void markAsBad() {
+    //     isDamaged = true;
+    //     occupied = true;
+    //     content = 0;
+    // }
 
     void clear() {
         this->content = 0;

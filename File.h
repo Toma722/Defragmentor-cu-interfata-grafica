@@ -72,10 +72,6 @@ class File {
             return this->id;
         }
 
-        [[nodiscard]] const std::string &getName() const {
-            return this->name;
-        }
-
         [[nodiscard]] const std::vector<int> &getBlockMap() const {
             return blockMap;
         }
