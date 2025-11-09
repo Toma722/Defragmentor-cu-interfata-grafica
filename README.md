@@ -4,10 +4,10 @@
 
 ### Scurta descriere: 
 
-Au fost implementate momentan clase de Block(nume sugestiv), File(nume sugestiv),
-DiskSpaceMap(simuleaza toate blocurile de pe un disc), AllocationTable(tine registrul). Au fost implementate cu construcotri de copiere,
-mutare, opreatori de copiere, mutare si <<.De asemenea exista destructori peste tot, iar in main au fost facute teste.
-Clasele au fost puse in fisierele .h corespunzatoare
+Acest proiect simuleaza vizual un sistem de fisiere, in care se regasesc urmatoarele functionalitati: crearea fisierelor,
+stergerea, extinderea, truncherea si un sistem de verificare a Checksum-ului calculat atat pe disc cat si in registrul de alocare.
+Acesta este interactiv, iar astfel se poate interactiona cu discul simulat prin intermediul unei interfete grafice.
+
 ### Tema 0
 
 - [X] Nume proiect (poate fi schimbat ulterior)
