@@ -76,7 +76,7 @@ class File {
             return this->name;
         }
 
-        std::vector<int> getBlockMap() {
+        [[nodiscard]] const std::vector<int> &getBlockMap() const {
             return blockMap;
         }
 
@@ -133,10 +133,6 @@ class File {
 
         void setBlockMap(const std::vector<int> &map) {
             blockMap = map;
-        }
-
-        void setChecksumAlgorithm(checksumAlgorithm alg) {
-            checksumAlgorithmUsed = alg;
         }
 
         [[nodiscard]] size_t getMasterChecksum() const {

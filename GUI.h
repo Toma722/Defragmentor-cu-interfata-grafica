@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <SFML/Graphics.hpp>
 #include "DiskSpaceMap.h"
 #include "AllocationTable.h"
@@ -202,7 +203,7 @@ class GUI {
                 return;
             }
 
-            File *fileToDelete = table.findFileById(static_cast<int>(fileId));
+            const File *fileToDelete = table.findFileById(static_cast<int>(fileId));
             if (fileToDelete == nullptr) {
                 std::cout<< "Fiserul nu este gasit!" << std::endl;
                 currentState = NORMAL;
@@ -332,7 +333,7 @@ class GUI {
             legendText.setFont(font);
             legendText.setCharacterSize(20);
             legendText.setFillColor(sf::Color::White);
-            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier");
+            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n V - Verifica Checksum  ");
             legendText.setPosition(SCREEN_WIDTH - legendText.getGlobalBounds().width - 10.f,
                                     SCREEN_HEIGHT - legendText.getGlobalBounds().height - 10.f);
 
@@ -384,6 +385,16 @@ class GUI {
                                     inputPromptText.setString("Introduceti Id ul fisierul de sters: (Enter: Stergere)");
                                     inputText = "";
                                     break;
+                                }
+
+                                case sf::Keyboard::V: {
+
+                                    for (const auto & i : table.getFiles()) {
+
+                                        const bool checksumOK = i.verifyChecksum(disk);
+                                        assert(checksumOK && "CHECKSUM A ESUAT");
+                                        std::cout<< "CHECKSUM OK" << std::endl;
+                                    }
                                 }
 
                                 default: break;

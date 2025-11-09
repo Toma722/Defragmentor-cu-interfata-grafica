@@ -17,6 +17,10 @@ class DiskSpaceMap {
             diskBlocks.resize(totalBlocks);
         }
 
+        // void markBlockAsDamaged(const int blockIndex) {
+        //     diskBlocks[blockIndex].markAsBad();
+        // }
+
         void defragment(AllocationTable &table);
 
         //asta ar fi first-fit
@@ -65,7 +69,7 @@ class DiskSpaceMap {
             }
         }
 
-        void relocateDamagedBlocks(AllocationTable &table);
+        //void relocateDamagedBlocks(AllocationTable &table);
 
         [[nodiscard]] int getNumBlocks() const {
             return static_cast<int>(diskBlocks.size());

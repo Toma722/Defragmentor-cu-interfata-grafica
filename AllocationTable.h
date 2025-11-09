@@ -38,6 +38,10 @@ public:
         return true;
     }
 
+    [[nodiscard]] const std::vector<File> &getFiles() {
+        return files;
+    }
+
     void updateBlockAddress(const int fileId, const int oldIndex, const int newIndex) {
         for (auto & file : files) {
             if (file.getId() == fileId) {
