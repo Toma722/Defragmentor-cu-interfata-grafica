@@ -3,6 +3,10 @@
 #include "AllocationTable.h"
 #include "File.h"
 
+DiskSpaceMap::DiskSpaceMap(const int totalBlocks) {
+    diskBlocks.resize(totalBlocks);
+}
+
 int DiskSpaceMap::findSpace(const File& file) const{
     int freeCount = 0;
     for (int i = 0; i < static_cast<int>((diskBlocks).size()); i++) {
@@ -71,4 +75,68 @@ void DiskSpaceMap::defragment(AllocationTable &table) { //Compacteaza blocurile 
             emptySlot++;
         }
     }
-};
+}
+
+[[nodiscard]] bool DiskSpaceMap::isSpace(const int numberOfBlocks) const {
+    int freeCount = 0;
+    for (const auto & diskBlock : diskBlocks) {
+        if (diskBlock.getOccupied() == false) {
+            freeCount++;
+        }
+        if (freeCount == numberOfBlocks) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+[[nodiscard]] int DiskSpaceMap::findFirstFreeBlock() const {
+    for (int i = 0; i < static_cast<int>(diskBlocks.size()); i++) {
+        if (diskBlocks[i].getOccupied() == false && diskBlocks[i].isBad() == false) {
+            return i;
+        }
+    }
+    return -1;//discul este plin
+}
+
+bool DiskSpaceMap::occupyBlock(const int blockIndex, const Block &dataBlock) {
+    if (diskBlocks[blockIndex].getOccupied() == true) {
+        return false;
+    }
+
+    const unsigned long dataToCopy = dataBlock.getContent();
+
+    diskBlocks[blockIndex].setData(blockIndex, true, dataToCopy, 4096);
+    return true;
+}
+
+void DiskSpaceMap::freeBlocks(const std::vector<int> &blockMap) {
+    for (const int blockIndex : blockMap) {
+        Block &block = diskBlocks[blockIndex];
+        block.clear();
+    }
+}
+
+[[nodiscard]] int DiskSpaceMap::getNumBlocks() const {
+    return static_cast<int>(diskBlocks.size());
+}
+
+[[nodiscard]] const Block &DiskSpaceMap::getBlock(const int index) const {
+    return diskBlocks[index];
+}
+
+std::ostream &operator<<(std::ostream &os, const DiskSpaceMap &diskSpaceMap) {
+    os<<"DiskSpaceMap: "<<diskSpaceMap.diskBlocks.size()<<"total blocks -> ";
+    for (int i = 0; i < static_cast<int>(diskSpaceMap.diskBlocks.size()); i++) {
+        os<<diskSpaceMap.diskBlocks[i]<<" ";
+        if (i % 10 == 0) {
+            os<<std::endl;
+        }
+    }
+    return os;
+}
+
+// void DiskSpaceMap::markBlockAsDamaged(const int blockIndex) {
+//     diskBlocks[blockIndex].markAsBad();
+// }

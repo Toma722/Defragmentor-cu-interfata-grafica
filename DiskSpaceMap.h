@@ -13,83 +13,33 @@ class DiskSpaceMap {
     private:
         std::vector<Block> diskBlocks;
     public:
-        explicit DiskSpaceMap(const int totalBlocks = 0) {
-            diskBlocks.resize(totalBlocks);
-        }
+        explicit DiskSpaceMap(int totalBlocks = 0);
 
-        // void markBlockAsDamaged(const int blockIndex) {
-        //     diskBlocks[blockIndex].markAsBad();
-        // }
+        //void markBlockAsDamaged(const int blockIndex);
 
         void defragment(AllocationTable &table);
 
         //asta ar fi first-fit
         [[nodiscard]] int findSpace(const File& file) const;
 
-        [[nodiscard]] bool isSpace(const int numberOfBlocks) const {
-            int freeCount = 0;
-            for (const auto & diskBlock : diskBlocks) {
-                if (diskBlock.getOccupied() == false) {
-                    freeCount++;
-                }
-                if (freeCount == numberOfBlocks) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        [[nodiscard]] bool isSpace(int numberOfBlocks) const;
 
         [[nodiscard]] std::vector<int> allocateFile(const File &file);
 
-        [[nodiscard]] int findFirstFreeBlock() const {
-            for (int i = 0; i < static_cast<int>(diskBlocks.size()); i++) {
-                if (diskBlocks[i].getOccupied() == false && diskBlocks[i].isBad() == false) {
-                    return i;
-                }
-            }
-            return -1;//discul este plin
-        }
+        [[nodiscard]] int findFirstFreeBlock() const;
 
-        bool occupyBlock(const int blockIndex, const Block &dataBlock) {
-            if (diskBlocks[blockIndex].getOccupied() == true) {
-                return false;
-            }
+        bool occupyBlock(int blockIndex, const Block &dataBlock);
 
-            const unsigned long dataToCopy = dataBlock.getContent();
-
-            diskBlocks[blockIndex].setData(blockIndex, true, dataToCopy, 4096);
-            return true;
-        }
-
-        void freeBlocks(const std::vector<int> &blockMap) {
-            for (const int blockIndex : blockMap) {
-                Block &block = diskBlocks[blockIndex];
-                block.clear();
-            }
-        }
+        void freeBlocks(const std::vector<int> &blockMap);
 
         //void relocateDamagedBlocks(AllocationTable &table);
 
-        [[nodiscard]] int getNumBlocks() const {
-            return static_cast<int>(diskBlocks.size());
-        }
+        [[nodiscard]] int getNumBlocks() const;
 
-        [[nodiscard]] const Block &getBlock(const int index) const {
-            return diskBlocks[index];
-        }
+        [[nodiscard]] const Block &getBlock(int index) const;
 
 
-        friend std::ostream &operator<<(std::ostream &os, const DiskSpaceMap &diskSpaceMap) {
-            os<<"DiskSpaceMap: "<<diskSpaceMap.diskBlocks.size()<<"total blocks -> ";
-            for (int i = 0; i < static_cast<int>(diskSpaceMap.diskBlocks.size()); i++) {
-                os<<diskSpaceMap.diskBlocks[i]<<" ";
-                if (i % 10 == 0) {
-                    os<<std::endl;
-                }
-            }
-            return os;
-        }
+        friend std::ostream &operator<<(std::ostream &os, const DiskSpaceMap &diskSpaceMap);
 
 };
 
