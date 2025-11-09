@@ -1,117 +1,84 @@
 #pragma once
 #include <iostream>
 #include "Block.h"
-#include "File.h"
+#include <vector>
+
+class File;
+class AllocationTable;
 
 #ifndef OOP_DISKSPACEMAP_H
 #define OOP_DISKSPACEMAP_H
 
-
 class DiskSpaceMap {
     private:
-        Block *diskBlocks;
-        int totalBlocks;
+        std::vector<Block> diskBlocks;
     public:
-        explicit DiskSpaceMap(int totalBlocks = 0) {
-            this->totalBlocks = totalBlocks;
-            this->diskBlocks = new Block[totalBlocks];
+        explicit DiskSpaceMap(const int totalBlocks = 0) {
+            diskBlocks.resize(totalBlocks);
         }
 
-        DiskSpaceMap(const DiskSpaceMap &other) { //cc
-            this->totalBlocks = other.totalBlocks;
-            this->diskBlocks = new Block[other.totalBlocks];
-            for (int i = 0; i < other.totalBlocks; i++) {
-                this->diskBlocks[i] = other.diskBlocks[i];
-            }
-        }
-
-        DiskSpaceMap(DiskSpaceMap &&other) noexcept { //cm
-            this->totalBlocks = other.totalBlocks;
-            this->diskBlocks = other.diskBlocks;
-            other.diskBlocks = nullptr;
-            other.totalBlocks = 0;
-        }
-
-        DiskSpaceMap &operator=(const DiskSpaceMap &other) {
-            if (this == &other) {
-                return *this;
-            }
-
-            auto *tempBlocks = new Block[other.totalBlocks];
-
-
-
-            for (int i = 0; i < other.totalBlocks; i++) {
-                tempBlocks[i] = other.diskBlocks[i];
-            }
-
-            delete[] this->diskBlocks;
-
-            this->diskBlocks = tempBlocks;
-            this->totalBlocks = other.totalBlocks;
-
-            return *this;
-        }
-
-        DiskSpaceMap &operator=(DiskSpaceMap &&other) noexcept {
-            if (this == &other) {
-                return *this;
-            }
-
-            delete[] this->diskBlocks;
-            this->diskBlocks = other.diskBlocks;
-            this->totalBlocks = other.totalBlocks;
-            other.diskBlocks = nullptr;
-            other.totalBlocks = 0;
-
-            return *this;
-        }
+        void defragment(AllocationTable &table);
 
         //asta ar fi first-fit
-        [[nodiscard]] int findSpace(const File& file) const { //functie netriviala
+        [[nodiscard]] int findSpace(const File& file) const;
+
+        [[nodiscard]] bool isSpace(const int numberOfBlocks) const {
             int freeCount = 0;
-            for (int i = 0; i < this->totalBlocks; i++) {
-                if (diskBlocks[i].getOccupied() == false) {
+            for (const auto & diskBlock : diskBlocks) {
+                if (diskBlock.getOccupied() == false) {
                     freeCount++;
-                    if (freeCount == file.getNumBlocks()) {
-                        return i - file.getNumBlocks() + 1;
-                    }
                 }
-                else {
-                    freeCount = 0;
+                if (freeCount == numberOfBlocks) {
+                    return true;
                 }
             }
-            return -1;
+
+            return false;
         }
 
-        //functie netriviala
-        [[nodiscard]] bool allocateFileBlocks(const File &file) const {
-            int startIndex = findSpace(file);
-            if (startIndex == -1) {
+        [[nodiscard]] std::vector<int> allocateFile(const File &file);
+
+        [[nodiscard]] int findFirstFreeBlock() const {
+            for (int i = 0; i < static_cast<int>(diskBlocks.size()); i++) {
+                if (diskBlocks[i].getOccupied() == false && diskBlocks[i].isBad() == false) {
+                    return i;
+                }
+            }
+            return -1;//discul este plin
+        }
+
+        bool occupyBlock(const int blockIndex, const Block &dataBlock) {
+            if (diskBlocks[blockIndex].getOccupied() == true) {
                 return false;
             }
-            int fileId = file.getId();
-            for (int i = 0; i < file.getNumBlocks(); i++) {
-                this->diskBlocks[startIndex + i].setData(startIndex + i, true, fileId);
-            }
+
+            const unsigned long dataToCopy = dataBlock.getContent();
+
+            diskBlocks[blockIndex].setData(blockIndex, true, dataToCopy, 4096);
             return true;
         }
 
+        void freeBlocks(const std::vector<int> &blockMap) {
+            for (const int blockIndex : blockMap) {
+                Block &block = diskBlocks[blockIndex];
+                block.clear();
+            }
+        }
+
+        void relocateDamagedBlocks(AllocationTable &table);
+
         [[nodiscard]] int getNumBlocks() const {
-            return this->totalBlocks;
+            return static_cast<int>(diskBlocks.size());
         }
 
-        [[nodiscard]] const Block &getBlock(int index) const {
-            return this->diskBlocks[index];
+        [[nodiscard]] const Block &getBlock(const int index) const {
+            return diskBlocks[index];
         }
 
-        ~DiskSpaceMap() {
-            delete[] this->diskBlocks;
-        }
 
         friend std::ostream &operator<<(std::ostream &os, const DiskSpaceMap &diskSpaceMap) {
-            os<<"DiskSpaceMap: "<<diskSpaceMap.totalBlocks<<"total blocks -> ";
-            for (int i = 0; i < diskSpaceMap.totalBlocks; i++) {
+            os<<"DiskSpaceMap: "<<diskSpaceMap.diskBlocks.size()<<"total blocks -> ";
+            for (int i = 0; i < static_cast<int>(diskSpaceMap.diskBlocks.size()); i++) {
                 os<<diskSpaceMap.diskBlocks[i]<<" ";
                 if (i % 10 == 0) {
                     os<<std::endl;

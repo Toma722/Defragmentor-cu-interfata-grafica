@@ -11,38 +11,6 @@
 class Test {
     public:
 
-        static void testMove() {
-            std::cout << "Test cm: " << std::endl;
-            File file99(99, 4, "file99.txt");
-            std::cout<<"Inainte de mutare: " << file99 << std::endl;
-            File file99Moved = std::move(file99);
-            std::cout << "Dupa mutare(file99Moved): " << file99Moved << std::endl;
-            // cppcheck-suppress accessMoved
-            std::cout << "Dupa mutare(file99 -> ar trebui sa fie gol): " << file99 << std::endl;
-        }
-
-        static void testCopy(const DiskSpaceMap &disk, AllocationTable &table) {
-            std::cout<< "Test Copy: " << std::endl;
-
-            AllocationTable copyTable = table;
-            File fileCopy(201, 2, "copy.txt");
-            if (disk.allocateFileBlocks(fileCopy)) {
-                table.addFile(fileCopy);
-            }
-
-            std::cout<<"Originalul (3 fisiere): " << std::endl;
-            std::cout<< copyTable << std::endl;
-            std::cout<< "Copia: (4 fisiere)" << std::endl;
-            std::cout<< table << std::endl;
-
-            std::cout<< "Test op=: " << std::endl;
-            AllocationTable table2("Test");
-            table2 = table;
-
-            std::cout<< "Dupa atribuire: " << std::endl;
-            std::cout<< table2 << std::endl;
-
-        }
 };
 
 

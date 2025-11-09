@@ -7,110 +7,68 @@
 
 class AllocationTable {
 private:
-    File *files;
+    std::vector<File> files;
     std::string formatType;
-    int fileCount, fileCapacity;
-
-    void resize() { //functie netriviala
-        int newFileCapacity = fileCapacity * 2;
-        File *newFiles = new File[newFileCapacity];
-        for (int i = 0; i < fileCount; i++) {
-            newFiles[i] = std::move(files[i]);
-        }
-        delete[] files;
-        files = newFiles;
-        fileCapacity = newFileCapacity;
-    }
 
 public:
     explicit AllocationTable(const std::string &type = "", int initialCapacity = 2) {
-        this->files = new File[initialCapacity];
-        this->fileCount = 0;
-        this->fileCapacity = initialCapacity;
+        files.reserve(initialCapacity); //vreau doar sa aloc memoria
         this->formatType = type;
     }
 
-    AllocationTable(const AllocationTable &other) { //cc
-        this->fileCount = other.fileCount;
-        this->formatType = other.formatType;
-        this->fileCapacity = other.fileCapacity;
-        this->files = new File[other.fileCapacity];
-        for (int i = 0; i < this->fileCount; i++) {
-            this->files[i] = other.files[i];
+    File *findFileById(const int &fileId) {
+        for (auto & file : files) {
+            if (file.getId() == fileId) {
+                return &file;
+            }
+        }
+
+        return nullptr;
+    }
+
+    bool createNewFile(int id, int size, const std::string &name, DiskSpaceMap &disk) {
+        File newFile(id, size, name);
+        std::vector<int> map = disk.allocateFile(newFile);
+        if (map.empty() == true) {
+            std::cout<< "Crearea fisierului " << name << " a esuat!" << std::endl;
+            return false;
+        }
+        newFile.setBlockMap(map);
+        addFile(newFile);
+        return true;
+    }
+
+    void updateBlockAddress(const int fileId, const int oldIndex, const int newIndex) {
+        for (auto & file : files) {
+            if (file.getId() == fileId) {
+                file.updatePhysicalAddress(oldIndex, newIndex);
+            }
         }
     }
 
-    AllocationTable(AllocationTable &&other)  noexcept { //cm
-        this->files = other.files;
-        this->fileCount = other.fileCount;
-        this->formatType = std::move(other.formatType);
-        this->fileCapacity = other.fileCapacity;
-        other.files = nullptr;
-        other.fileCount = 0;
-        other.fileCapacity = 0;
-        other.formatType = "";
-
+    void addFile(const File &fileToAdd) {
+        files.push_back(fileToAdd);
     }
 
-    AllocationTable &operator=(const AllocationTable &other) {
-        if (this == &other) {
-            return *this;
+    bool deleteFile(const int &fileId) {
+        for (int i = 0; i < static_cast<int>(files.size()); i++) {
+            if (files[i].getId() == fileId) {
+                std::swap(files[i], files.back());
+                files.pop_back();
+                return true;
+            }
         }
 
-        File *tempFiles = new File[other.fileCapacity];
-
-        for (int i = 0; i < other.fileCount; i++) {
-            tempFiles[i] = other.files[i];
-        }
-
-        delete[] this->files;
-
-        this->files = tempFiles;
-        this->fileCapacity = other.fileCapacity;
-        this->formatType = other.formatType;
-        this->fileCount = other.fileCount;
-
-
-        return *this;
+        return false;
     }
 
-    AllocationTable &operator=(AllocationTable &&other) noexcept {
-        if (this == &other) {
-            return *this;
-        }
-        delete[] this->files;
-        this->files = other.files;
-        this->fileCapacity = other.fileCapacity;
-        this->formatType = std::move(other.formatType);
-        this->fileCount = other.fileCount;
-
-        other.files = nullptr;
-        other.fileCount = 0;
-        other.fileCapacity = 0;
-        other.formatType = "";
-
-
-        return *this;
-    }
-
-    void addFile(const File &fileToAdd) { //functie netriviala
-        if (this->fileCount == this->fileCapacity) {
-            this->resize();
-        }
-        this->files[this->fileCount] = fileToAdd;
-        this->fileCount++;
-    }
-
-    ~AllocationTable() {
-        delete[] this->files;
-    }
 
     friend std::ostream &operator<<(std::ostream &os, const AllocationTable &allocationTable) {
         os<< "================ Tebelul de alocare (" << allocationTable.formatType <<") "
-                << allocationTable.fileCount << "/" << allocationTable.fileCapacity << " fisiere ======";
+                << allocationTable.files.size() << "/" << allocationTable.files.capacity() << " fisiere ======";
 
-        for (int i = 0; i < allocationTable.fileCount; i++) {
-            os<< std::endl <<allocationTable.files[i];
+        for (const auto & file : allocationTable.files) {
+            os<< std::endl <<file;
         }
 
         os<< std::endl << "==================================";
