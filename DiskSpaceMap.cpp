@@ -75,6 +75,9 @@ void DiskSpaceMap::defragment(AllocationTable &table) { //Compacteaza blocurile 
         }
     }
 }
+Block &DiskSpaceMap::getBlockRef(const int index) {
+    return diskBlocks[index];
+}
 
 [[nodiscard]] bool DiskSpaceMap::isSpace(const int numberOfBlocks) const {
     int freeCount = 0;

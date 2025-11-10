@@ -11,7 +11,7 @@
 
 enum GuiState {
     NORMAL, INPUT_DELETE, INPUT_ADD_ID, INPUT_ADD_SIZE, INPUT_ADD_NAME, INPUT_TRUNCATE_ADD_ID, INPUT_TRUNCATE, INPUT_EXTEND,
-    INPUT_EXTEND_ADD_ID
+    INPUT_EXTEND_ADD_ID, DEFRAGMENTING
 };
 
 class GUI {
@@ -30,6 +30,10 @@ class GUI {
         sf::Text legendText;
         int tempFileId;
         int tempFileSize;
+        int defragEmptySlot;
+        int defragBlockToScan;
+
+        void runDefragmentStep();
 
         void handleSubmitExtend();
 

@@ -38,6 +38,8 @@ class DiskSpaceMap {
 
         [[nodiscard]] const Block &getBlock(int index) const;
 
+        Block &getBlockRef(int index);
+
 
         friend std::ostream &operator<<(std::ostream &os, const DiskSpaceMap &diskSpaceMap);
 

@@ -235,6 +235,13 @@ void GUI::drawDiskMap() {
                     blockShape.setFillColor(sf::Color::Green);
                 }
 
+                if (currentState == DEFRAGMENTING) {
+                    if (i == defragBlockToScan) {
+                        blockShape.setFillColor(sf::Color::Blue);
+                    }
+                }
+
+
                 const int col = i % blocksPerRow;
                 const int row = i / blocksPerRow;
                 const float pozX = static_cast<float>(col) * BLOCK_LENGTH;
@@ -283,9 +290,30 @@ void GUI::handleTextInput(const sf::Uint32 unicode, const GuiState state) {
             }
 }
 
+void GUI::runDefragmentStep() {
+    if (defragBlockToScan >= disk.getNumBlocks() - 1) {
+        currentState = NORMAL;
+        std::cout<< "Defragmentare Terminata" << std::endl;
+        return;
+    }
+    if (Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
+        if (defragBlockToScan != defragEmptySlot) {
+            Block &emptyBlock = disk.getBlockRef(defragEmptySlot);
+            const unsigned long fileId = blockToScan.getContent();
+            const int size = blockToScan.getSize();
+            emptyBlock.setData(defragEmptySlot, true, fileId, size);
+            table.updateBlockAddress(static_cast<int>(fileId), defragBlockToScan, defragEmptySlot);
+            blockToScan.clear();
+
+        }
+        defragEmptySlot++;
+    }
+    defragBlockToScan++;
+}
+
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.3");
-            window.setFramerateLimit(60);
+            window.setFramerateLimit(30);
 
             blockShape.setSize(sf::Vector2f(BLOCK_LENGTH, BLOCK_LENGTH));
             blockShape.setOutlineColor(sf::Color::Black);
@@ -333,6 +361,8 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
 
             tempFileId = 0;
             tempFileSize = 0;
+            defragBlockToScan = 0;
+            defragEmptySlot = 0;
         }
 
 void GUI::run() {
@@ -356,8 +386,9 @@ void GUI::run() {
 
                                 case sf::Keyboard::D: {
                                     std::cout<< "Defragmentare... " << std::endl;
-                                    disk.defragment(table);
-                                    std::cout<<"Defragmentare Terminata" << std::endl;
+                                    currentState = DEFRAGMENTING;
+                                    defragBlockToScan = 0;
+                                    defragEmptySlot = 0;
                                     break;
                                 }
 
@@ -604,9 +635,13 @@ void GUI::run() {
                     }
                 }
 
+                if (currentState == DEFRAGMENTING) {
+                    runDefragmentStep();
+                }
+
                 window.clear(sf::Color(128, 128, 128));
                 drawDiskMap();
-                if (currentState != NORMAL) {
+                if (currentState != NORMAL && currentState != DEFRAGMENTING) {
                     drawInputBox();
                 }
                 window.draw(legendText);
