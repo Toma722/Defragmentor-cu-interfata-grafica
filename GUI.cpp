@@ -19,7 +19,11 @@ void GUI::handleSubmitExtend() {
     }
     File *fileToExtend = table.findFileById(tempFileId);
     if (fileToExtend == nullptr) {
-        std::cout<< "Fisierul nu exista!" << std::endl;
+        inputPromptText.setString("Fisierul nu exista (Esc = RETURN)");
+        return;
+    }
+    if (const File temp(0, tempFileSize); disk.findSpace(temp) == -1) {
+        inputPromptText.setString("Nu Exista Loc (Defragmentare sau marire disc! ESC = RETURN)");
         return;
     }
     fileToExtend->extend(tempFileSize, disk);
@@ -41,7 +45,10 @@ void GUI::handleSubmitExtendAddId() {
                 currentState = NORMAL;
                 return;
             }
-
+            if (table.findFileById(tempFileId) == nullptr) {
+                inputPromptText.setString("Fisierul nu exista (Esc = RETURN)");
+                return;
+            }
             currentState = INPUT_EXTEND;
             inputPromptText.setString("Introduceti cu cate blocuri sa fie extins fisierul: ");
             inputText = "";
@@ -63,9 +70,18 @@ void GUI::handleSubmitTruncate() {
             }
             File *fileToTruncate = table.findFileById(tempFileId);
             if (fileToTruncate == nullptr) {
-                std::cout<< "Fisierul nu exista!" << std::endl;
+                inputPromptText.setString("Fisierul Nu Exista! (ESC = RETURN)");
                 return;
             }
+            if (tempFileSize < 1) {
+                inputPromptText.setString("Nu se poate Trunchia la mai putin de 1 bloc! (ESC = RETURN)");
+                return;
+            }
+            else if (tempFileSize >= fileToTruncate->getNumBlocks()) {
+                inputPromptText.setString("Nu se poate Trunchia la sau peste dimensiunea Fisierului! (ESC = Return)");
+                return;
+            }
+
             fileToTruncate->truncate(tempFileSize, disk);
             currentState = NORMAL;
             inputText = "";
@@ -83,6 +99,11 @@ void GUI::handleSubmitTruncateAddId() {
                 std::cout<< "Id-ul trebuie sa fie un numar!" << std::endl;
                 inputText = "";
                 currentState = NORMAL;
+                return;
+            }
+
+            if (table.findFileById(tempFileId) == nullptr) {
+                inputPromptText.setString("Fisierul Nu Exista! (ESC = RETURN)");
                 return;
             }
 
@@ -108,7 +129,7 @@ void GUI::handleSubmitAddId() {
             }
 
             if (table.findFileById(tempFileId) != nullptr) {
-                std::cout<< "Fisier cu Id deja existent" << std::endl;
+                inputPromptText.setString("Fisierul este deja existent! (ESC = RETURN)");
                 return;
             }
 
@@ -134,6 +155,11 @@ void GUI::handleSubmitAddSize() {
                     return;
                 }
 
+                if (const File temp(0, tempFileSize); disk.findSpace(temp) == -1) {
+                    inputPromptText.setString("Fisierul nu incape! (Defragmentare sau marire disc! ESC = RETURN)");
+                    return;
+                }
+
                 currentState = INPUT_ADD_NAME;
                 inputPromptText.setString("Introduceti Numele Fisierului: ");
                 inputText = "";
@@ -141,7 +167,7 @@ void GUI::handleSubmitAddSize() {
             }
 
 void GUI::handleSubmitAddName() {
-                File newFile(static_cast<int>(this->tempFileId), this->tempFileSize, inputText);
+                File newFile(this->tempFileId, this->tempFileSize, inputText);
                 const std::vector<int> map = disk.allocateFile(newFile);
                 if (map.empty()) {
                     std::cout<< "Nu s-a putut adauga fisierul!" << std::endl;
@@ -174,8 +200,7 @@ void GUI::handleDeleteInput() {
 
             const File *fileToDelete = table.findFileById(static_cast<int>(fileId));
             if (fileToDelete == nullptr) {
-                std::cout<< "Fiserul nu este gasit!" << std::endl;
-                currentState = NORMAL;
+                inputPromptText.setString("Fisierul Nu Exista! (ESC = RETURN)");
                 return;
             }
 
@@ -190,8 +215,6 @@ void GUI::handleDeleteInput() {
 
             inputText = "";
             currentState = NORMAL;
-
-
 
         }
 
@@ -242,9 +265,13 @@ void GUI::handleTextInput(const sf::Uint32 unicode, const GuiState state) {
                 state == INPUT_TRUNCATE_ADD_ID || state == INPUT_EXTEND ||
                 state == INPUT_EXTEND_ADD_ID) {
                 if (unicode >= 48 && unicode <= 57) {
+                    inputBackground.setOutlineColor(sf::Color::White);
                     if (inputText.length() < 10) {
                         inputText += static_cast<char>(unicode);
                     }
+                }
+                else if (!inputText.empty()){
+                    inputBackground.setOutlineColor(sf::Color::Red);
                 }
             }
             else if (state == INPUT_ADD_NAME) {
@@ -254,7 +281,7 @@ void GUI::handleTextInput(const sf::Uint32 unicode, const GuiState state) {
                     }
                 }
             }
-        }
+}
 
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.3");
@@ -278,7 +305,7 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             inputBackground.setSize(sf::Vector2f(600.f, 100.f));
             inputBackground.setFillColor(sf::Color(50, 50, 50, 220));
             inputBackground.setOutlineColor(sf::Color::White);
-            inputBackground.setOutlineThickness(1.f);
+            inputBackground.setOutlineThickness(4.f);
 
             inputPromptText.setFont(font);
             inputPromptText.setCharacterSize(16);
@@ -320,6 +347,7 @@ void GUI::run() {
                         if (currentState == NORMAL) {
                             switch (event.key.code) {
                                 case sf::Keyboard::A: {
+                                    inputBackground.setOutlineColor(sf::Color::White);
                                     currentState = INPUT_ADD_ID;
                                     inputPromptText.setString("Introduceti ID ul noului fisier (Enter = Urmatorul Pas):");
                                     inputText = "";
@@ -334,6 +362,7 @@ void GUI::run() {
                                 }
 
                                 case sf::Keyboard::T: {
+                                    inputBackground.setOutlineColor(sf::Color::White);
                                     currentState = INPUT_TRUNCATE_ADD_ID;
                                     inputPromptText.setString("Introduceti Id-ul (Enter = Mai departe): ");
                                     inputText = "";
@@ -341,6 +370,7 @@ void GUI::run() {
                                 }
 
                                 case sf::Keyboard::E: {
+                                    inputBackground.setOutlineColor(sf::Color::White);
                                     currentState = INPUT_EXTEND_ADD_ID;
                                     inputPromptText.setString("Introduceti Id-ul (Enter = Mai departe): ");
                                     inputText = "";
@@ -348,6 +378,7 @@ void GUI::run() {
                                 }
 
                                 case sf::Keyboard::S: {
+                                    inputBackground.setOutlineColor(sf::Color::White);
                                     currentState = INPUT_DELETE;
                                     inputPromptText.setString("Introduceti Id ul fisierul de sters: (Enter: Stergere)");
                                     inputText = "";

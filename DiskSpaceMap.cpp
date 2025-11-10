@@ -1,5 +1,4 @@
 #include "DiskSpaceMap.h"
-
 #include "AllocationTable.h"
 #include "File.h"
 
@@ -61,8 +60,8 @@ void DiskSpaceMap::defragment(AllocationTable &table) { //Compacteaza blocurile 
     for (int blockToScan = 0; blockToScan < static_cast<int>(diskBlocks.size()); blockToScan++) {
         if (diskBlocks[blockToScan].getOccupied() == true) {
             if (blockToScan != emptySlot) {
-                int fileId = static_cast<int>(diskBlocks[blockToScan].getContent());
-                int size = diskBlocks[blockToScan].getSize();
+                const int fileId = static_cast<int>(diskBlocks[blockToScan].getContent());
+                const int size = diskBlocks[blockToScan].getSize();
 
                 diskBlocks[emptySlot].setData(emptySlot, true, fileId, size);
 
