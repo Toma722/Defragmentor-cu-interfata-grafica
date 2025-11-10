@@ -229,7 +229,35 @@ void GUI::drawDiskMap() {
                 }
 
                 else if(block.getOccupied() == true) {
-                    blockShape.setFillColor(sf::Color::Red);
+                    const unsigned long fileId = block.getContent();
+                    int colorIndex = static_cast<int>(fileId) % 5; //ADAUGAT CULORI
+                    switch (colorIndex) {
+                        case 0: {
+                            blockShape.setFillColor(sf::Color::Red);
+                            break;
+                        }
+                        case 1: {
+                            blockShape.setFillColor(sf::Color::Yellow);
+                            break;
+                        }
+                        case 2: {
+                            blockShape.setFillColor(sf::Color::Magenta);
+                            break;
+                        }
+                        case 3: {
+                            blockShape.setFillColor(sf::Color::White);
+                            break;
+                        }
+                        case 4: {
+                            blockShape.setFillColor(sf::Color::Cyan);
+                            break;
+                        }
+                        default: {
+                            blockShape.setFillColor(sf::Color::Green);
+                            break;
+                        }
+                    }
+
                 }
                 else {
                     blockShape.setFillColor(sf::Color::Green);
