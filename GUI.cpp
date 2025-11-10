@@ -300,7 +300,7 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             legendText.setFont(font);
             legendText.setCharacterSize(20);
             legendText.setFillColor(sf::Color::White);
-            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n V - Verifica Checksum  ");
+            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n V - Verifica Checksum\n X - Exit");
             legendText.setPosition(SCREEN_WIDTH - legendText.getGlobalBounds().width - 10.f,
                                     SCREEN_HEIGHT - legendText.getGlobalBounds().height - 10.f);
 
@@ -362,6 +362,10 @@ void GUI::run() {
                                         assert(checksumOK && "CHECKSUM A ESUAT");
                                         std::cout<< "CHECKSUM OK" << std::endl;
                                     }
+                                }
+
+                                case sf::Keyboard::X: {
+                                    window.close();
                                 }
 
                                 default: break;

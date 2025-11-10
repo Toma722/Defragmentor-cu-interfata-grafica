@@ -56,7 +56,7 @@ runs:
         ASAN_OPTIONS: halt_on_error=0
         EXECUTABLE_NAME: ${{ env.EXECUTABLE_NAME }}
       run: |
-        xvfb-run -a ./scripts/run_sanitizers.sh || true
+        xvfb-run ./scripts/run_sanitizers.sh || true
       working-directory: ${{github.workspace}}
 
     - name: Valgrind
@@ -66,5 +66,5 @@ runs:
       env:
         EXECUTABLE_NAME: ${{ env.EXECUTABLE_NAME }}
       run: |
-        xvfb-run -a ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}" || true
+        xvfb-run ./scripts/run_valgrind.sh "${{ env.ZIP_NAME }}" || true
       working-directory: ${{github.workspace}}
