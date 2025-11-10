@@ -362,10 +362,12 @@ void GUI::run() {
                                         assert(checksumOK && "CHECKSUM A ESUAT");
                                         std::cout<< "CHECKSUM OK" << std::endl;
                                     }
+                                    break;
                                 }
 
                                 case sf::Keyboard::X: {
                                     window.close();
+                                    break;
                                 }
 
                                 default: break;
