@@ -50,7 +50,7 @@ File::File(int id, int size, const std::string &name ,
     return this->id;
 }
 
-[[nodiscard]] std::string File::getName() const {
+[[nodiscard]]const std::string &File::getName() const {
     return name;
 }
 

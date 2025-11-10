@@ -34,7 +34,7 @@ class File {
 
         [[nodiscard]] int getId() const;
 
-        [[nodiscard]] std::string getName() const;
+        [[nodiscard]]const std::string &getName() const;
 
         [[nodiscard]] const std::vector<int> &getBlockMap() const;
 
