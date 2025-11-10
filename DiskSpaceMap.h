@@ -17,7 +17,7 @@ class DiskSpaceMap {
 
         //void markBlockAsDamaged(const int blockIndex);
 
-        void defragment(AllocationTable &table);
+        //void defragment(AllocationTable &table);
 
         //asta ar fi first-fit
         [[nodiscard]] int findSpace(const File& file) const;

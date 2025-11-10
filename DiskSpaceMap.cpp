@@ -55,26 +55,27 @@ std::vector<int> DiskSpaceMap::allocateFile(const File& file) {
 //     }
 // };
 
-void DiskSpaceMap::defragment(AllocationTable &table) { //Compacteaza blocurile complet
-    int emptySlot = 0;
-    for (int blockToScan = 0; blockToScan < static_cast<int>(diskBlocks.size()); blockToScan++) {
-        if (diskBlocks[blockToScan].getOccupied() == true) {
-            if (blockToScan != emptySlot) {
-                const int fileId = static_cast<int>(diskBlocks[blockToScan].getContent());
-                const int size = diskBlocks[blockToScan].getSize();
+// void DiskSpaceMap::defragment(AllocationTable &table) { //Compacteaza blocurile complet
+//     int emptySlot = 0;
+//     for (int blockToScan = 0; blockToScan < static_cast<int>(diskBlocks.size()); blockToScan++) {
+//         if (diskBlocks[blockToScan].getOccupied() == true) {
+//             if (blockToScan != emptySlot) {
+//                 const int fileId = static_cast<int>(diskBlocks[blockToScan].getContent());
+//                 const int size = diskBlocks[blockToScan].getSize();
+//
+//                 diskBlocks[emptySlot].setData(emptySlot, true, fileId, size);
+//
+//                 table.updateBlockAddress(fileId, blockToScan, emptySlot);
+//
+//                 diskBlocks[blockToScan].clear();
+//
+//             }
+//
+//             emptySlot++;
+//         }
+//     }
+// }
 
-                diskBlocks[emptySlot].setData(emptySlot, true, fileId, size);
-
-                table.updateBlockAddress(fileId, blockToScan, emptySlot);
-
-                diskBlocks[blockToScan].clear();
-
-            }
-
-            emptySlot++;
-        }
-    }
-}
 Block &DiskSpaceMap::getBlockRef(const int index) {
     return diskBlocks[index];
 }
