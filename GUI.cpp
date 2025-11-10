@@ -257,7 +257,7 @@ void GUI::handleTextInput(const sf::Uint32 unicode, const GuiState state) {
         }
 
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
-            window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.2");
+            window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.3");
             window.setFramerateLimit(60);
 
             blockShape.setSize(sf::Vector2f(BLOCK_LENGTH, BLOCK_LENGTH));

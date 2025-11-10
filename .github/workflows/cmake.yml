@@ -31,7 +31,7 @@ env:
   BIN_DIR: "bin"       # update in cmake/Options.cmake:6 if changing name here
   BUILD_DIR: "build"
   EXT_DIR: "ext"
-  APP_WINDOW: "My Window"
+  APP_WINDOW: "Defragmentor v0.3"
   # NOTE: also update in CMakeLists FetchContent
   SFML_VERSION: "2024-11-10-2.6.2"
 

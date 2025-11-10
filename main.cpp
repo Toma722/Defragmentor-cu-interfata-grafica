@@ -8,7 +8,7 @@
 //de implementat format type urile
 
 int main() {
-    DiskSpaceMap disk(64);
+    DiskSpaceMap disk(256);
     AllocationTable table("FAT32", 4);
 
     GUI gui(disk, table);
