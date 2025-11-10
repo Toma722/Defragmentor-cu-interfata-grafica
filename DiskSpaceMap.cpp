@@ -37,23 +37,26 @@ std::vector<int> DiskSpaceMap::allocateFile(const File& file) {
     return allocatedBlocks;
 }
 
-// void DiskSpaceMap::relocateDamagedBlocks(AllocationTable &table) {
-//     for (int i = 0; i < static_cast<int>(diskBlocks.size()); i++) {
-//         if (diskBlocks[i].isBad() == true && diskBlocks[i].getOccupied() == true) {
-//             int fileId = static_cast<int>(diskBlocks[i].getContent());
-//             int oldIndex = i;
-//             int newIndex = findFirstFreeBlock();
-//             if (newIndex == -1) {
-//                 std::cout<< "Discul este plin! Nu se poate reloca blocul " << i << std::endl;
-//                 return;
-//             }
-//
-//             occupyBlock(newIndex, diskBlocks[oldIndex]);
-//             table.updateBlockAddress(fileId, oldIndex, newIndex);
-//             diskBlocks[oldIndex].markAsBad();
-//         }
-//     }
-// };
+void DiskSpaceMap::relocateDamagedBlocks(AllocationTable &table) {
+    for (int i = 0; i < static_cast<int>(diskBlocks.size()); i++) {
+        if (diskBlocks[i].isBad() == true && diskBlocks[i].getOccupied() == true) {
+            int fileId = static_cast<int>(diskBlocks[i].getContent());
+            int oldIndex = i;
+            int newIndex = findFirstFreeBlock();
+            if (newIndex == -1) {
+                std::cout<< "Discul este plin! Nu se poate reloca blocul " << i << std::endl;
+                return;
+            }
+
+            occupyBlock(newIndex, diskBlocks[oldIndex]);
+            table.updateBlockAddress(fileId, oldIndex, newIndex);
+            diskBlocks[oldIndex].clear();
+
+            diskBlocks[oldIndex].markAsBad();
+
+        }
+    }
+};
 
 // void DiskSpaceMap::defragment(AllocationTable &table) { //Compacteaza blocurile complet
 //     int emptySlot = 0;
@@ -140,6 +143,6 @@ std::ostream &operator<<(std::ostream &os, const DiskSpaceMap &diskSpaceMap) {
     return os;
 }
 
-// void DiskSpaceMap::markBlockAsDamaged(const int blockIndex) {
-//     diskBlocks[blockIndex].markAsBad();
-// }
+void DiskSpaceMap::markBlockAsDamaged(const int blockIndex) {
+    diskBlocks[blockIndex].markAsBad();
+}

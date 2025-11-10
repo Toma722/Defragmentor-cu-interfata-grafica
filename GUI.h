@@ -5,8 +5,8 @@
 #ifndef OOP_GUI_H
 #define OOP_GUI_H
 
-#define SCREEN_WIDTH 1600
-#define SCREEN_HEIGHT 900
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 #define BLOCK_LENGTH 60.f
 
 enum GuiState {
@@ -28,10 +28,14 @@ class GUI {
         sf::Text inputPromptText;
         sf::Text inputUserText;
         sf::Text legendText;
+        sf::Text toolTipText;
+        sf::RectangleShape toolTipBackground;
         int tempFileId;
         int tempFileSize;
         int defragEmptySlot;
         int defragBlockToScan;
+        int blocksPerRow;
+        int hoveredBlockIndex;
 
         void runDefragmentStep();
 
@@ -56,6 +60,8 @@ class GUI {
         void drawInputBox();
 
         void handleTextInput(sf::Uint32 unicode, GuiState state);
+
+        void drawToolTip();
 
     public:
 

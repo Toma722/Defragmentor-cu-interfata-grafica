@@ -15,7 +15,7 @@ class DiskSpaceMap {
     public:
         explicit DiskSpaceMap(int totalBlocks = 0);
 
-        //void markBlockAsDamaged(const int blockIndex);
+        void markBlockAsDamaged(int blockIndex);
 
         //void defragment(AllocationTable &table);
 
@@ -32,7 +32,7 @@ class DiskSpaceMap {
 
         void freeBlocks(const std::vector<int> &blockMap);
 
-        //void relocateDamagedBlocks(AllocationTable &table);
+        void relocateDamagedBlocks(AllocationTable &table);
 
         [[nodiscard]] int getNumBlocks() const;
 

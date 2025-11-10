@@ -37,7 +37,7 @@ public:
 
     [[nodiscard]] bool isBad() const;
 
-    // void markAsBad();
+    void markAsBad();
 
     void clear();
 

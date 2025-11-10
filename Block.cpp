@@ -60,9 +60,7 @@ void Block::setData(const int blockId, const bool isOccupied, const unsigned lon
     this->size = bSize;
 }
 
-// void Block::markAsBad() {
-//     isDamaged = true;
-//     occupied = true;
-//     content = 0;
-// }
+void Block::markAsBad() {
+    isDamaged = true;
+}
 

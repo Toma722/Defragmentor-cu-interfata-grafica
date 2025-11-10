@@ -219,8 +219,6 @@ void GUI::handleDeleteInput() {
         }
 
 void GUI::drawDiskMap() {
-            constexpr int blocksPerRow = SCREEN_WIDTH / static_cast<int>(BLOCK_LENGTH);
-
             for (int i = 0; i < disk.getNumBlocks(); i++) {
                 const Block &block = disk.getBlock(i);
 
@@ -319,11 +317,24 @@ void GUI::handleTextInput(const sf::Uint32 unicode, const GuiState state) {
 }
 
 void GUI::runDefragmentStep() {
-    if (defragBlockToScan >= disk.getNumBlocks() - 1) {
+    if (defragBlockToScan >= disk.getNumBlocks()) {
         currentState = NORMAL;
         std::cout<< "Defragmentare Terminata" << std::endl;
         return;
     }
+
+    while (defragEmptySlot < disk.getNumBlocks() && disk.getBlockRef(defragEmptySlot).isBad() == true) {
+        defragEmptySlot++;
+    }
+    if (defragBlockToScan < defragEmptySlot) {
+        defragBlockToScan = defragEmptySlot;
+    }
+
+    if (disk.getBlockRef(defragBlockToScan).isBad() == true) {
+        defragBlockToScan++;
+        return;
+    }
+
     if (Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
         if (defragBlockToScan != defragEmptySlot) {
             Block &emptyBlock = disk.getBlockRef(defragEmptySlot);
@@ -339,8 +350,52 @@ void GUI::runDefragmentStep() {
     defragBlockToScan++;
 }
 
+void GUI::drawToolTip() {
+    if (hoveredBlockIndex == -1) {
+        return;
+    }
+
+    const Block &block = disk.getBlock(hoveredBlockIndex);
+    std::string infoString = "Index fizic: " + std::to_string(hoveredBlockIndex) + "\n";
+    if (block.isBad() == true) {
+        infoString += "Status: STRICAT";
+    }
+    else if (block.getOccupied() == true) {
+        const std::string fileName = table.findFileById(static_cast<int>(block.getContent()))->getName();
+        infoString += "Status: OCUPAT DE:\nFisier: " + fileName + "\n" + "ID:" + std::to_string(block.getContent());
+    }
+    else {
+        infoString += "Status: LIBER";
+    }
+
+    const sf::Vector2i mouseIntPoz = sf::Mouse::getPosition(window);
+    const sf::Vector2f mousePoz(mouseIntPoz);
+    const float mouseX = mousePoz.x;
+    const float mouseY = mousePoz.y;
+    float initalX = mouseX + 15.f;
+    float initalY = mouseY + 15.f;
+    float finalX = initalX;
+    const float finalY = initalY;
+    toolTipText.setString(infoString);
+
+    const sf::FloatRect textBounds = toolTipText.getGlobalBounds();
+
+    if (const float toolTipWidth = textBounds.width + 10.f; initalX + toolTipWidth + 55.f > SCREEN_WIDTH) {
+        finalX = SCREEN_WIDTH - toolTipWidth - 60.f;
+    }
+
+    toolTipBackground.setSize(sf::Vector2f(textBounds.width + 10.f, textBounds.height + 10.f));
+
+    toolTipText.setPosition(finalX, finalY);
+    toolTipBackground.setPosition(finalX, finalY);
+
+    window.draw(toolTipBackground);
+    window.draw(toolTipText);
+}
+
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.3");
+            blocksPerRow = SCREEN_WIDTH / static_cast<int>(BLOCK_LENGTH);
             window.setFramerateLimit(30);
 
             blockShape.setSize(sf::Vector2f(BLOCK_LENGTH, BLOCK_LENGTH));
@@ -383,14 +438,22 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             legendText.setFont(font);
             legendText.setCharacterSize(20);
             legendText.setFillColor(sf::Color::White);
-            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n V - Verifica Checksum\n X - Exit");
-            legendText.setPosition(SCREEN_WIDTH - legendText.getGlobalBounds().width - 10.f,
-                                    SCREEN_HEIGHT - legendText.getGlobalBounds().height - 10.f);
+            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n MOUSELEFT - Strica un bloc\n R - Repara\n V - Verifica Checksum\n X - Exit");
+            legendText.setPosition(SCREEN_WIDTH - legendText.getGlobalBounds().width - 100.f,
+                                    SCREEN_HEIGHT - legendText.getGlobalBounds().height - 100.f);
+
+            toolTipText.setFont(font);
+            toolTipText.setCharacterSize(14);
+            toolTipText.setFillColor(sf::Color::White);
+
+            toolTipBackground.setFillColor({0, 0, 0, 170});
+
 
             tempFileId = 0;
             tempFileSize = 0;
             defragBlockToScan = 0;
             defragEmptySlot = 0;
+            hoveredBlockIndex = -1;
         }
 
 void GUI::run() {
@@ -452,6 +515,11 @@ void GUI::run() {
                                         assert(checksumOK && "CHECKSUM A ESUAT");
                                         std::cout<< "CHECKSUM OK" << std::endl;
                                     }
+                                    break;
+                                }
+
+                                case sf::Keyboard::R: {
+                                    disk.relocateDamagedBlocks(table);
                                     break;
                                 }
 
@@ -658,8 +726,42 @@ void GUI::run() {
 
                     }
 
+                    else if (event.type == sf::Event::MouseButtonPressed) {
+                        if (currentState == NORMAL) {
+                            if (event.mouseButton.button == sf::Mouse::Left) {
+                                const int mouseX = event.mouseButton.x;
+                                const int mouseY = event.mouseButton.y;
+                                const int col = mouseX / static_cast<int>(BLOCK_LENGTH);
+                                const int row = mouseY / static_cast<int>(BLOCK_LENGTH);
+
+                                if (int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks()) {
+                                    disk.markBlockAsDamaged(index);
+                                }
+                            }
+                        }
+                    }
+
                     else if (event.type == sf::Event::TextEntered) {
                         handleTextInput(event.text.unicode, currentState);
+                    }
+
+                    else if (event.type == sf::Event::MouseMoved) {
+                        if (currentState == NORMAL) {
+                            const int mouseX = event.mouseMove.x;
+                            const int mouseY = event.mouseMove.y;
+
+                            const int col = mouseX / static_cast<int>(BLOCK_LENGTH);
+                            const int row = mouseY / static_cast<int>(BLOCK_LENGTH);
+
+                            const int index = row * blocksPerRow + col;
+
+                            if (index >= 0 && index < disk.getNumBlocks()) {
+                                hoveredBlockIndex = index;
+                            }
+                            else {
+                                hoveredBlockIndex = -1;
+                            }
+                        }
                     }
                 }
 
@@ -672,6 +774,12 @@ void GUI::run() {
                 if (currentState != NORMAL && currentState != DEFRAGMENTING) {
                     drawInputBox();
                 }
+
+                if (currentState == NORMAL) {
+                    drawToolTip();
+                }
+
+
                 window.draw(legendText);
                 window.display();
             }

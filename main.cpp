@@ -8,10 +8,9 @@
 //de implementat format type urile
 
 int main() {
-    DiskSpaceMap disk(256);
+    DiskSpaceMap disk(351);
     AllocationTable table("FAT32", 4);
 
     GUI gui(disk, table);
     gui.run();
-
 }
