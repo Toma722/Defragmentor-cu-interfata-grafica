@@ -264,7 +264,7 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             blockShape.setOutlineColor(sf::Color::Black);
             blockShape.setOutlineThickness(1);
 
-            if (font.loadFromFile("arial.ttf") == false) {
+            if (font.loadFromFile("fonts/arial.ttf") == false) {
                 std::cout<< "EROARE: Nu s-a putut incarca fontul" << std::endl;
                 window.close();
             }
