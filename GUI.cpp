@@ -394,15 +394,15 @@ void GUI::drawToolTip() {
 }
 
 void GUI::updateAndDrawDashBoard() {
-    const int totalBlocks = disk.getNumBlocks();
-    const int freeBlocks = disk.getTotalFreeBlocks();
-    const int usedBlocks = disk.getTotalUsedBlocks();
-    const int badBlocks = disk.getTotalBadBlocks();
+    const int numOfTotalBlocks = disk.getNumBlocks();
+    const int numofFreeBlocks = disk.getTotalFreeBlocks();
+    const int numOfUsedBlocks = disk.getTotalUsedBlocks();
+    const int numOfBadBlocks = disk.getTotalBadBlocks();
     const double fragmentationPercentage = disk.getFragmentationPercentage() * 100;
 
-    dashBoardText.setString("STATISTICI DISC:\nTotal: " + std::to_string(totalBlocks) +
-        " blocuri\nLiber: " + std::to_string(freeBlocks) + " blocuri\nOcupate: " + std::to_string(usedBlocks)
-        + " blocuri\nStricate: " + std::to_string(badBlocks) + " blocuri\nFragmentare: " + std::to_string(fragmentationPercentage) + "%");
+    dashBoardText.setString("STATISTICI DISC:\nTotal: " + std::to_string(numOfTotalBlocks) +
+        " blocuri\nLiber: " + std::to_string(numofFreeBlocks) + " blocuri\nOcupate: " + std::to_string(numOfUsedBlocks)
+        + " blocuri\nStricate: " + std::to_string(numOfBadBlocks) + " blocuri\nFragmentare: " + std::to_string(fragmentationPercentage) + "%");
 
     window.draw(dashBoardText);
 }
