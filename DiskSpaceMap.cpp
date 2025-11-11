@@ -128,16 +128,16 @@ Block &DiskSpaceMap::getBlockRef(const int index) {
 }
 
 [[nodiscard]] double DiskSpaceMap::getFragmentationPercentage() const {
-    int freeBlocks = 0, largestContiguousSpace = 0;
+    int countFreeBlocks = 0, largestContiguousSpace = 0;
     for (const auto & diskBlock: diskBlocks) {
         if (diskBlock.isBad() == true || diskBlock.getOccupied() == true) {
-            if (freeBlocks > largestContiguousSpace) {
-                largestContiguousSpace = freeBlocks;
-                freeBlocks = 0;
+            if (countFreeBlocks > largestContiguousSpace) {
+                largestContiguousSpace = countFreeBlocks;
+                countFreeBlocks = 0;
             }
         }
         else {
-            freeBlocks++;
+            countFreeBlocks++;
         }
     }
     return 1.0 - static_cast<double>(largestContiguousSpace) / static_cast<double>(getTotalFreeBlocks());
