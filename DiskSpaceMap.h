@@ -34,6 +34,14 @@ class DiskSpaceMap {
 
         void relocateDamagedBlocks(AllocationTable &table);
 
+        [[nodiscard]] int getTotalFreeBlocks() const;
+
+        [[nodiscard]] int getTotalUsedBlocks() const;
+
+        [[nodiscard]] int getTotalBadBlocks() const;
+
+        [[nodiscard]] double getFragmentationPercentage() const;
+
         [[nodiscard]] int getNumBlocks() const;
 
         [[nodiscard]] const Block &getBlock(int index) const;

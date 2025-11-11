@@ -28,6 +28,7 @@ class GUI {
         sf::Text inputPromptText;
         sf::Text inputUserText;
         sf::Text legendText;
+        sf::Text dashBoardText;
         sf::Text toolTipText;
         sf::RectangleShape toolTipBackground;
         int tempFileId;
@@ -63,6 +64,8 @@ class GUI {
 
         void drawToolTip();
 
+        void updateAndDrawDashBoard();
+
     public:
 
         explicit GUI(DiskSpaceMap &disk, AllocationTable &table);
@@ -70,6 +73,5 @@ class GUI {
         void run();
 
 };
-
 
 #endif //OOP_GUI_H

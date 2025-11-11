@@ -97,6 +97,52 @@ Block &DiskSpaceMap::getBlockRef(const int index) {
     return false;
 }
 
+[[nodiscard]] int DiskSpaceMap::getTotalFreeBlocks() const {
+    int freeBlocks = 0;
+    for (const auto & diskBlock : diskBlocks) {
+        if (diskBlock.isBad() == false && diskBlock.getOccupied() == false) {
+            freeBlocks++;
+        }
+    }
+    return freeBlocks;
+}
+
+[[nodiscard]] int DiskSpaceMap::getTotalUsedBlocks() const {
+    int usedBlocks = 0;
+    for (const auto & diskBlock: diskBlocks) {
+        if (diskBlock.getOccupied() == true) {
+            usedBlocks++;
+        }
+    }
+    return usedBlocks;
+}
+
+[[nodiscard]] int DiskSpaceMap::getTotalBadBlocks() const {
+    int badBlocks = 0;
+    for (const auto & diskBlock: diskBlocks) {
+        if (diskBlock.isBad() == true) {
+            badBlocks++;
+        }
+    }
+    return badBlocks;
+}
+
+[[nodiscard]] double DiskSpaceMap::getFragmentationPercentage() const {
+    int freeBlocks = 0, largestContiguousSpace = 0;
+    for (const auto & diskBlock: diskBlocks) {
+        if (diskBlock.isBad() == true || diskBlock.getOccupied() == true) {
+            if (freeBlocks > largestContiguousSpace) {
+                largestContiguousSpace = freeBlocks;
+                freeBlocks = 0;
+            }
+        }
+        else {
+            freeBlocks++;
+        }
+    }
+    return 1.0 - static_cast<double>(largestContiguousSpace) / static_cast<double>(getTotalFreeBlocks());
+};
+
 [[nodiscard]] int DiskSpaceMap::findFirstFreeBlock() const {
     for (int i = 0; i < static_cast<int>(diskBlocks.size()); i++) {
         if (diskBlocks[i].getOccupied() == false && diskBlocks[i].isBad() == false) {

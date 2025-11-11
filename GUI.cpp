@@ -393,6 +393,20 @@ void GUI::drawToolTip() {
     window.draw(toolTipText);
 }
 
+void GUI::updateAndDrawDashBoard() {
+    const int totalBlocks = disk.getNumBlocks();
+    const int freeBlocks = disk.getTotalFreeBlocks();
+    const int usedBlocks = disk.getTotalUsedBlocks();
+    const int badBlocks = disk.getTotalBadBlocks();
+    const double fragmentationPercentage = disk.getFragmentationPercentage() * 100;
+
+    dashBoardText.setString("STATISTICI DISC:\nTotal: " + std::to_string(totalBlocks) +
+        " blocuri\nLiber: " + std::to_string(freeBlocks) + " blocuri\nOcupate: " + std::to_string(usedBlocks)
+        + " blocuri\nStricate: " + std::to_string(badBlocks) + " blocuri\nFragmentare: " + std::to_string(fragmentationPercentage) + "%");
+
+    window.draw(dashBoardText);
+}
+
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.3");
             blocksPerRow = SCREEN_WIDTH / static_cast<int>(BLOCK_LENGTH);
@@ -448,6 +462,10 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
 
             toolTipBackground.setFillColor({0, 0, 0, 170});
 
+            dashBoardText.setFont(font);
+            dashBoardText.setCharacterSize(20);
+            dashBoardText.setFillColor(sf::Color::White);
+            dashBoardText.setPosition(0.f,SCREEN_HEIGHT - 320.f);
 
             tempFileId = 0;
             tempFileSize = 0;
@@ -734,7 +752,7 @@ void GUI::run() {
                                 const int col = mouseX / static_cast<int>(BLOCK_LENGTH);
                                 const int row = mouseY / static_cast<int>(BLOCK_LENGTH);
 
-                                if (int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks()) {
+                                if (const int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks()) {
                                     disk.markBlockAsDamaged(index);
                                 }
                             }
@@ -779,7 +797,7 @@ void GUI::run() {
                     drawToolTip();
                 }
 
-
+                updateAndDrawDashBoard();
                 window.draw(legendText);
                 window.display();
             }

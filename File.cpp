@@ -54,7 +54,6 @@ File::File(int id, int size, const std::string &name ,
     return name;
 }
 
-
 [[nodiscard]] const std::vector<int> &File::getBlockMap() const {
     return blockMap;
 }
