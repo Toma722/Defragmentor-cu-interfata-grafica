@@ -140,6 +140,9 @@ Block &DiskSpaceMap::getBlockRef(const int index) {
             countFreeBlocks++;
         }
     }
+    if (countFreeBlocks > largestContiguousSpace) {
+        largestContiguousSpace = countFreeBlocks;
+    }
     return 1.0 - static_cast<double>(largestContiguousSpace) / static_cast<double>(getTotalFreeBlocks());
 };
 

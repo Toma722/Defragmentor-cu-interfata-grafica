@@ -220,6 +220,8 @@ void GUI::handleDeleteInput() {
 
 void GUI::drawDiskMap() {
             for (int i = 0; i < disk.getNumBlocks(); i++) {
+                blockShape.setOutlineColor(sf::Color::Black);
+                blockShape.setOutlineThickness(1.f);
                 const Block &block = disk.getBlock(i);
 
                 if (block.isBad() == true) {
@@ -231,40 +233,45 @@ void GUI::drawDiskMap() {
                     int colorIndex = static_cast<int>(fileId) % 5; //ADAUGAT CULORI
                     switch (colorIndex) {
                         case 0: {
-                            blockShape.setFillColor(sf::Color::Red);
+                            blockShape.setFillColor(sf::Color(255, 128, 0));
                             break;
                         }
                         case 1: {
-                            blockShape.setFillColor(sf::Color::Yellow);
+                            blockShape.setFillColor(sf::Color(0, 255, 255));
                             break;
                         }
                         case 2: {
-                            blockShape.setFillColor(sf::Color::Magenta);
+                            blockShape.setFillColor(sf::Color(255, 0, 128));
                             break;
                         }
                         case 3: {
-                            blockShape.setFillColor(sf::Color::White);
+                            blockShape.setFillColor(sf::Color(255, 200, 0));
                             break;
                         }
                         case 4: {
-                            blockShape.setFillColor(sf::Color::Cyan);
+                            blockShape.setFillColor(sf::Color(60, 150, 255));
                             break;
                         }
                         default: {
-                            blockShape.setFillColor(sf::Color::Green);
+                            blockShape.setFillColor(sf::Color(120, 160, 255, 100));
                             break;
                         }
                     }
 
                 }
                 else {
-                    blockShape.setFillColor(sf::Color::Green);
+                    blockShape.setFillColor(sf::Color(120, 160, 255, 100));
                 }
 
                 if (currentState == DEFRAGMENTING) {
                     if (i == defragBlockToScan) {
                         blockShape.setFillColor(sf::Color::Blue);
                     }
+                }
+
+                else if (currentState == NORMAL && i == hoveredBlockIndex && block.isBad() == false) {
+                    blockShape.setOutlineColor(sf::Color::White);
+                    blockShape.setOutlineThickness(3.f);
                 }
 
 
@@ -395,16 +402,41 @@ void GUI::drawToolTip() {
 
 void GUI::updateAndDrawDashBoard() {
     const int numOfTotalBlocks = disk.getNumBlocks();
-    const int numofFreeBlocks = disk.getTotalFreeBlocks();
+    const int numOfFreeBlocks = disk.getTotalFreeBlocks();
     const int numOfUsedBlocks = disk.getTotalUsedBlocks();
     const int numOfBadBlocks = disk.getTotalBadBlocks();
     const double fragmentationPercentage = disk.getFragmentationPercentage() * 100;
 
     dashBoardText.setString("STATISTICI DISC:\nTotal: " + std::to_string(numOfTotalBlocks) +
-        " blocuri\nLiber: " + std::to_string(numofFreeBlocks) + " blocuri\nOcupate: " + std::to_string(numOfUsedBlocks)
+        " blocuri\nLiber: " + std::to_string(numOfFreeBlocks) + " blocuri\nOcupate: " + std::to_string(numOfUsedBlocks)
         + " blocuri\nStricate: " + std::to_string(numOfBadBlocks) + " blocuri\nFragmentare: " + std::to_string(fragmentationPercentage) + "%");
 
     window.draw(dashBoardText);
+}
+
+void GUI::drawFragmentationBar() {
+    double fragmentationPer = disk.getFragmentationPercentage();
+    if (fragmentationPer < 0.3) {
+        fragmentationBarFill.setFillColor(sf::Color(100, 255, 170));
+    }
+
+    else if (fragmentationPer < 0.65) {
+        fragmentationBarFill.setFillColor(sf::Color(255, 180, 0));
+    }
+
+    else {
+        fragmentationBarFill.setFillColor(sf::Color(200, 50, 50));
+    }
+
+    float maxBarWidth = fragmentationBarBackground.getSize().x;
+    float currentWidth = static_cast<float>(fragmentationPer) * maxBarWidth;
+
+    fragmentationBarFill.setSize(sf::Vector2f(currentWidth, fragmentationBarBackground.getSize().y));
+
+    window.draw(fragmentationBarBackground);
+    window.draw(fragmentationBarFill);
+
+
 }
 
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
@@ -425,7 +457,7 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             blockText.setCharacterSize(18);
             blockText.setFillColor(sf::Color::Black);
 
-            currentState = GuiState::NORMAL;
+            currentState = NORMAL;
 
             inputBackground.setSize(sf::Vector2f(600.f, 100.f));
             inputBackground.setFillColor(sf::Color(50, 50, 50, 220));
@@ -466,6 +498,17 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             dashBoardText.setCharacterSize(20);
             dashBoardText.setFillColor(sf::Color::White);
             dashBoardText.setPosition(0.f,SCREEN_HEIGHT - 320.f);
+
+            const float barX = dashBoardText.getPosition().x;
+            const float barY = dashBoardText.getGlobalBounds().height + dashBoardText.getPosition().y + 160.f;
+
+            fragmentationBarBackground.setSize({300.f, 30.f});
+            fragmentationBarBackground.setPosition(barX + 5.f, barY);
+            fragmentationBarBackground.setOutlineThickness(1.f);
+            fragmentationBarBackground.setOutlineColor(sf::Color::White);
+            fragmentationBarBackground.setFillColor(sf::Color(50, 50, 50));
+
+            fragmentationBarFill.setPosition(barX + 5.f, barY);
 
             tempFileId = 0;
             tempFileSize = 0;
@@ -787,7 +830,7 @@ void GUI::run() {
                     runDefragmentStep();
                 }
 
-                window.clear(sf::Color(128, 128, 128));
+                window.clear(sf::Color(30, 30, 50));
                 drawDiskMap();
                 if (currentState != NORMAL && currentState != DEFRAGMENTING) {
                     drawInputBox();
@@ -798,6 +841,7 @@ void GUI::run() {
                 }
 
                 updateAndDrawDashBoard();
+                drawFragmentationBar();
                 window.draw(legendText);
                 window.display();
             }

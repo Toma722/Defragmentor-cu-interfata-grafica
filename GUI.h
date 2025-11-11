@@ -31,6 +31,8 @@ class GUI {
         sf::Text dashBoardText;
         sf::Text toolTipText;
         sf::RectangleShape toolTipBackground;
+        sf::RectangleShape fragmentationBarBackground;
+        sf::RectangleShape fragmentationBarFill;
         int tempFileId;
         int tempFileSize;
         int defragEmptySlot;
@@ -65,6 +67,8 @@ class GUI {
         void drawToolTip();
 
         void updateAndDrawDashBoard();
+
+        void drawFragmentationBar();
 
     public:
 
