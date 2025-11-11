@@ -98,13 +98,13 @@ Block &DiskSpaceMap::getBlockRef(const int index) {
 }
 
 [[nodiscard]] int DiskSpaceMap::getTotalFreeBlocks() const {
-    int freeBlocks = 0;
+    int countFreeBlocks = 0;
     for (const auto & diskBlock : diskBlocks) {
         if (diskBlock.isBad() == false && diskBlock.getOccupied() == false) {
-            freeBlocks++;
+            countFreeBlocks++;
         }
     }
-    return freeBlocks;
+    return countFreeBlocks;
 }
 
 [[nodiscard]] int DiskSpaceMap::getTotalUsedBlocks() const {
