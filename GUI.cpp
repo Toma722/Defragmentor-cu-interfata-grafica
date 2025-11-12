@@ -230,7 +230,7 @@ void GUI::drawDiskMap() {
 
                 else if(block.getOccupied() == true) {
                     const unsigned long fileId = block.getContent();
-                    int colorIndex = static_cast<int>(fileId) % 5; //ADAUGAT CULORI
+                    int colorIndex = static_cast<int>(fileId) % 5;
                     switch (colorIndex) {
                         case 0: {
                             blockShape.setFillColor(sf::Color(255, 128, 0));
@@ -379,8 +379,8 @@ void GUI::drawToolTip() {
     const sf::Vector2f mousePoz(mouseIntPoz);
     const float mouseX = mousePoz.x;
     const float mouseY = mousePoz.y;
-    float initalX = mouseX + 15.f;
-    float initalY = mouseY + 15.f;
+    const float initalX = mouseX + 15.f;
+    const float initalY = mouseY + 15.f;
     float finalX = initalX;
     const float finalY = initalY;
     toolTipText.setString(infoString);
@@ -415,7 +415,7 @@ void GUI::updateAndDrawDashBoard() {
 }
 
 void GUI::drawFragmentationBar() {
-    double fragmentationPer = disk.getFragmentationPercentage();
+    const double fragmentationPer = disk.getFragmentationPercentage();
     if (fragmentationPer < 0.3) {
         fragmentationBarFill.setFillColor(sf::Color(100, 255, 170));
     }
@@ -428,8 +428,8 @@ void GUI::drawFragmentationBar() {
         fragmentationBarFill.setFillColor(sf::Color(200, 50, 50));
     }
 
-    float maxBarWidth = fragmentationBarBackground.getSize().x;
-    float currentWidth = static_cast<float>(fragmentationPer) * maxBarWidth;
+    const float maxBarWidth = fragmentationBarBackground.getSize().x;
+    const float currentWidth = static_cast<float>(fragmentationPer) * maxBarWidth;
 
     fragmentationBarFill.setSize(sf::Vector2f(currentWidth, fragmentationBarBackground.getSize().y));
 
@@ -814,9 +814,7 @@ void GUI::run() {
                             const int col = mouseX / static_cast<int>(BLOCK_LENGTH);
                             const int row = mouseY / static_cast<int>(BLOCK_LENGTH);
 
-                            const int index = row * blocksPerRow + col;
-
-                            if (index >= 0 && index < disk.getNumBlocks()) {
+                            if (const int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks()) {
                                 hoveredBlockIndex = index;
                             }
                             else {
