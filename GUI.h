@@ -33,6 +33,7 @@ class GUI {
         sf::RectangleShape toolTipBackground;
         sf::RectangleShape fragmentationBarBackground;
         sf::RectangleShape fragmentationBarFill;
+        sf::Clock globalClock;
         int tempFileId;
         int tempFileSize;
         int defragEmptySlot;
@@ -58,7 +59,7 @@ class GUI {
 
         void handleDeleteInput();
 
-        void drawDiskMap();
+        void drawDiskMap(const float &pulse);
 
         void drawInputBox();
 

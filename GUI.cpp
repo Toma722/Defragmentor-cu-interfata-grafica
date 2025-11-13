@@ -2,6 +2,7 @@
 #include "File.h"
 #include "AllocationTable.h"
 #include <cassert>
+#include <cmath>
 
 void GUI::handleSubmitExtend() {
     if (inputText.empty()) {
@@ -218,11 +219,15 @@ void GUI::handleDeleteInput() {
 
         }
 
-void GUI::drawDiskMap() {
+void GUI::drawDiskMap(const float &pulse) {
             for (int i = 0; i < disk.getNumBlocks(); i++) {
                 blockShape.setOutlineColor(sf::Color::Black);
                 blockShape.setOutlineThickness(1.f);
                 const Block &block = disk.getBlock(i);
+
+                if (i == hoveredBlockIndex) {
+                    continue;
+                }
 
                 if (block.isBad() == true) {
                     blockShape.setFillColor(sf::Color::Black);
@@ -265,13 +270,9 @@ void GUI::drawDiskMap() {
 
                 if (currentState == DEFRAGMENTING) {
                     if (i == defragBlockToScan) {
-                        blockShape.setFillColor(sf::Color::Blue);
+                        blockShape.setFillColor(sf::Color(static_cast<sf::Uint8>(pulse * 255),
+                                                          static_cast<sf::Uint8>(pulse * 255), 255));
                     }
-                }
-
-                else if (currentState == NORMAL && i == hoveredBlockIndex && block.isBad() == false) {
-                    blockShape.setOutlineColor(sf::Color::White);
-                    blockShape.setOutlineThickness(3.f);
                 }
 
 
@@ -288,6 +289,74 @@ void GUI::drawDiskMap() {
                     window.draw(blockText);
                 }
 
+            }
+
+            if (hoveredBlockIndex != -1) {
+                blockShape.setOutlineColor(sf::Color::Black);
+                blockShape.setOutlineThickness(1.f);
+                const Block &block = disk.getBlock(hoveredBlockIndex);
+
+                if (block.isBad() == true) {
+                    blockShape.setFillColor(sf::Color::Black);
+                }
+
+                else if(block.getOccupied() == true) {
+                    const unsigned long fileId = block.getContent();
+                    int colorIndex = static_cast<int>(fileId) % 5;
+                    switch (colorIndex) {
+                        case 0: {
+                            blockShape.setFillColor(sf::Color(255, 128, 0));
+                            break;
+                        }
+                        case 1: {
+                            blockShape.setFillColor(sf::Color(0, 255, 255));
+                            break;
+                        }
+                        case 2: {
+                            blockShape.setFillColor(sf::Color(255, 0, 128));
+                            break;
+                        }
+                        case 3: {
+                            blockShape.setFillColor(sf::Color(255, 200, 0));
+                            break;
+                        }
+                        case 4: {
+                            blockShape.setFillColor(sf::Color(60, 150, 255));
+                            break;
+                        }
+                        default: {
+                            blockShape.setFillColor(sf::Color(120, 160, 255, 100));
+                            break;
+                        }
+                    }
+
+                }
+                else {
+                    blockShape.setFillColor(sf::Color(120, 160, 255, 100));
+                }
+
+                if (currentState == DEFRAGMENTING) {
+                    if (hoveredBlockIndex == defragBlockToScan) {
+                        blockShape.setFillColor(sf::Color(static_cast<sf::Uint8>(pulse * 255),
+                                                          static_cast<sf::Uint8>(pulse * 255), 255));
+                    }
+                }
+                blockShape.setOutlineColor(sf::Color::White);
+                blockShape.setOutlineThickness(1.f + pulse * 3.f);
+
+
+                const int col = hoveredBlockIndex % blocksPerRow;
+                const int row = hoveredBlockIndex / blocksPerRow;
+                const float pozX = static_cast<float>(col) * BLOCK_LENGTH;
+                const float pozY = static_cast<float>(row) * BLOCK_LENGTH;
+                blockShape.setPosition(pozX, pozY);
+                window.draw(blockShape);
+                if (block.getOccupied() == true && block.isBad() == false) {
+                    const std::string id = std::to_string(block.getContent());
+                    blockText.setString(id);
+                    blockText.setPosition(pozX + 2.f, pozY + 2.f);
+                    window.draw(blockText);
+                }
             }
         }
 
@@ -520,6 +589,7 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
 void GUI::run() {
             while (window.isOpen()) {
                 sf::Event event{};
+                const double pulse = (std::sin(globalClock.getElapsedTime().asSeconds() * 5.f) + 1.f) / 2.f;
                 while (window.pollEvent(event)) {
                     if (event.type == sf::Event::Closed) {
                         window.close();
@@ -829,7 +899,7 @@ void GUI::run() {
                 }
 
                 window.clear(sf::Color(30, 30, 50));
-                drawDiskMap();
+                drawDiskMap(static_cast<float>(pulse));
                 if (currentState != NORMAL && currentState != DEFRAGMENTING) {
                     drawInputBox();
                 }
