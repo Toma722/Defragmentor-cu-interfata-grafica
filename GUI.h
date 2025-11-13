@@ -16,6 +16,9 @@ enum GuiState {
 
 class GUI {
     private:
+        sf::View camera;
+        bool isPanning;
+        sf::Vector2i lastPanPos;
         sf::RenderWindow window;
         sf::RectangleShape blockShape;
         DiskSpaceMap &disk;
@@ -31,6 +34,8 @@ class GUI {
         sf::Text dashBoardText;
         sf::Text toolTipText;
         sf::RectangleShape toolTipBackground;
+        sf::RectangleShape miniMapBackground;
+        sf::RectangleShape miniMapBlock;
         sf::RectangleShape fragmentationBarBackground;
         sf::RectangleShape fragmentationBarFill;
         sf::RectangleShape animatedDefragmentationBlock;
@@ -45,6 +50,8 @@ class GUI {
         int defragBlockToScan;
         int blocksPerRow;
         int hoveredBlockIndex;
+
+        void drawMiniMap(const float &pulse);
 
         void runDefragmentStep();
 

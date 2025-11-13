@@ -569,10 +569,78 @@ void GUI::drawFragmentationBar() {
 
 }
 
+void GUI::drawMiniMap(const float &pulse) {
+    window.draw(miniMapBackground);
+    const sf::Vector2f miniMapPosition = miniMapBackground.getPosition();
+    for (int i = 0; i < disk.getNumBlocks(); i++) {
+                const Block &block = disk.getBlock(i);
+
+                if (currentState == DEFRAGMENTATION_ANIMATION &&
+                   (i == defragBlockToScan || i == defragEmptySlot)) {
+                    continue;
+                   }
+
+                if (block.isBad() == true) {
+                    miniMapBlock.setFillColor(sf::Color::Black);
+                }
+
+                else if(block.getOccupied() == true) {
+                    const unsigned long fileId = block.getContent();
+                    int colorIndex = static_cast<int>(fileId) % 5;
+                    switch (colorIndex) {
+                        case 0: {
+                            miniMapBlock.setFillColor(sf::Color(255, 128, 0));
+                            break;
+                        }
+                        case 1: {
+                            miniMapBlock.setFillColor(sf::Color(0, 255, 255));
+                            break;
+                        }
+                        case 2: {
+                            miniMapBlock.setFillColor(sf::Color(255, 0, 128));
+                            break;
+                        }
+                        case 3: {
+                            miniMapBlock.setFillColor(sf::Color(255, 200, 0));
+                            break;
+                        }
+                        case 4: {
+                            miniMapBlock.setFillColor(sf::Color(60, 150, 255));
+                            break;
+                        }
+                        default: {
+                            miniMapBlock.setFillColor(sf::Color(120, 160, 255, 100));
+                            break;
+                        }
+                    }
+
+                }
+                else {
+                    miniMapBlock.setFillColor(sf::Color(120, 160, 255, 100));
+                }
+
+                if (currentState == DEFRAGMENTING) {
+                    if (i == defragBlockToScan) {
+                        miniMapBlock.setFillColor(sf::Color(static_cast<sf::Uint8>(pulse * 255),
+                                                          static_cast<sf::Uint8>(pulse * 255), 255));
+                    }
+                }
+
+
+        const int col = i % blocksPerRow;
+        const int row = i / blocksPerRow;
+        const float pozX = miniMapPosition.x + (static_cast<float>(col) * 2.f);
+        const float pozY = miniMapPosition.y + (static_cast<float>(row) * 2.f);
+
+        miniMapBlock.setPosition(pozX, pozY);
+        window.draw(miniMapBlock);
+    }
+}
+
 GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             window.create(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Defragmentor v0.3");
             blocksPerRow = SCREEN_WIDTH / static_cast<int>(BLOCK_LENGTH);
-            window.setFramerateLimit(30);
+            window.setFramerateLimit(60);
 
             blockShape.setSize(sf::Vector2f(BLOCK_LENGTH, BLOCK_LENGTH));
             blockShape.setOutlineColor(sf::Color::Black);
@@ -617,7 +685,7 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             legendText.setFont(font);
             legendText.setCharacterSize(20);
             legendText.setFillColor(sf::Color::White);
-            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n MOUSELEFT - Strica un bloc\n R - Repara\n V - Verifica Checksum\n X - Exit");
+            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n MOUSELEFT - Strica un bloc\n MOUSEWHEEL - ZOOM si Mutare\n R - Repara\n V - Verifica Checksum\n X - Exit");
             legendText.setPosition(SCREEN_WIDTH - legendText.getGlobalBounds().width - 100.f,
                                     SCREEN_HEIGHT - legendText.getGlobalBounds().height - 100.f);
 
@@ -650,6 +718,21 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             hoveredBlockIndex = -1;
             animationDefragmentationSpeed = 5.f;
             animationDefragmentationProgress = 0.f;
+
+            isPanning = false;
+            camera.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+            camera.setCenter(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f);
+
+            float miniMapWidth = static_cast<float>(blocksPerRow) * 2.f;
+            float miniMapHeight = (static_cast<float>(disk.getNumBlocks()) / static_cast<float>(blocksPerRow)) * 2.f;
+
+            miniMapBackground.setSize({miniMapWidth, miniMapHeight});
+            miniMapBackground.setFillColor(sf::Color(50, 50, 50, 220));
+            miniMapBackground.setPosition(0.95f * SCREEN_WIDTH - miniMapBackground.getSize().x, 10.f);
+
+            miniMapBlock.setSize(sf::Vector2f(2.f, 2.f));
+            miniMapBlock.setFillColor(sf::Color(120, 160, 255, 100));
+
         }
 
 void GUI::run() {
@@ -926,15 +1009,27 @@ void GUI::run() {
                     else if (event.type == sf::Event::MouseButtonPressed) {
                         if (currentState == NORMAL) {
                             if (event.mouseButton.button == sf::Mouse::Left) {
-                                const int mouseX = event.mouseButton.x;
-                                const int mouseY = event.mouseButton.y;
-                                const int col = mouseX / static_cast<int>(BLOCK_LENGTH);
-                                const int row = mouseY / static_cast<int>(BLOCK_LENGTH);
+                                sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                                const sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos, camera);
 
-                                if (const int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks()) {
+                                const int col = static_cast<int>(worldPos.x / BLOCK_LENGTH);
+                                const int row = static_cast<int>(worldPos.y / BLOCK_LENGTH);
+
+                                if (const int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks() && col < blocksPerRow && col >= 0) {
                                     disk.markBlockAsDamaged(index);
                                 }
                             }
+
+                        }
+                        if (event.mouseButton.button == sf::Mouse::Middle) {
+                            isPanning = true;
+                            lastPanPos = sf::Mouse::getPosition(window);
+                        }
+                    }
+
+                    else if (event.type == sf::Event::MouseButtonReleased) {
+                        if (event.mouseButton.button == sf::Mouse::Middle) {
+                            isPanning = false;
                         }
                     }
 
@@ -944,18 +1039,42 @@ void GUI::run() {
 
                     else if (event.type == sf::Event::MouseMoved) {
                         if (currentState == NORMAL) {
-                            const int mouseX = event.mouseMove.x;
-                            const int mouseY = event.mouseMove.y;
+                            sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                            const sf::Vector2f worldPos = window.mapPixelToCoords(pixelPos, camera);
 
-                            const int col = mouseX / static_cast<int>(BLOCK_LENGTH);
-                            const int row = mouseY / static_cast<int>(BLOCK_LENGTH);
+                            const int col = static_cast<int>(worldPos.x / BLOCK_LENGTH);
+                            const int row = static_cast<int>(worldPos.y / BLOCK_LENGTH);
 
-                            if (const int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks()) {
+                            if (const int index = row * blocksPerRow + col; index >= 0 && index < disk.getNumBlocks() &&
+                                col < blocksPerRow && col >= 0) {
                                 hoveredBlockIndex = index;
                             }
                             else {
                                 hoveredBlockIndex = -1;
                             }
+                        }
+
+                        if (isPanning == true) {
+                            const sf::Vector2i newMousePos = sf::Mouse::getPosition(window);
+
+                            sf::Vector2f worldOldPos = window.mapPixelToCoords(lastPanPos, camera);
+
+                            sf::Vector2f worldNewPos = window.mapPixelToCoords(newMousePos, camera);
+
+                            const sf::Vector2f delta = worldOldPos - worldNewPos;
+
+                            camera.move(delta);
+
+                            lastPanPos = newMousePos;
+                        }
+                    }
+
+                    else if (event.type == sf::Event::MouseWheelScrolled) {
+                        if (event.mouseWheelScroll.delta > 0) {
+                            camera.zoom(0.9f);
+                        }
+                        else if (event.mouseWheelScroll.delta < 0) {
+                            camera.zoom(1.1f);
                         }
                     }
                 }
@@ -969,23 +1088,26 @@ void GUI::run() {
                 }
 
                 window.clear(sf::Color(30, 30, 50));
+
+                window.setView(camera);
+
                 drawDiskMap(static_cast<float>(pulse));
 
                 if (currentState == DEFRAGMENTATION_ANIMATION) {
                     window.draw(animatedDefragmentationBlock);
                 }
 
+                window.setView(window.getDefaultView());
+
                 if (currentState != NORMAL && currentState != DEFRAGMENTING && currentState != DEFRAGMENTATION_ANIMATION) {
                     drawInputBox();
-                }
-
-                if (currentState == NORMAL) {
-                    drawToolTip();
                 }
 
                 updateAndDrawDashBoard();
                 drawFragmentationBar();
                 window.draw(legendText);
+                drawToolTip();
+                drawMiniMap(static_cast<float>(pulse));
                 window.display();
             }
         }
