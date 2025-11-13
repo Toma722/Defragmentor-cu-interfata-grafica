@@ -225,6 +225,10 @@ void GUI::drawDiskMap(const float &pulse) {
                 blockShape.setOutlineThickness(1.f);
                 const Block &block = disk.getBlock(i);
 
+                if (currentState == DEFRAGMENTATION_ANIMATION &&
+                   (i == defragBlockToScan || i == defragEmptySlot)) {
+                    continue;
+                   }
                 if (i == hoveredBlockIndex) {
                     continue;
                 }
@@ -392,7 +396,16 @@ void GUI::handleTextInput(const sf::Uint32 unicode, const GuiState state) {
             }
 }
 
-void GUI::runDefragmentStep() {
+sf::Vector2f GUI::getPixelPosition(const int index) const {
+    const int col = index % blocksPerRow;
+    const int row = index / blocksPerRow;
+    return {
+        static_cast<float>(col) * BLOCK_LENGTH,
+        static_cast<float>(row) * BLOCK_LENGTH
+    };
+}
+
+void GUI::runDefragmentStep()    {
     if (defragBlockToScan >= disk.getNumBlocks()) {
         currentState = NORMAL;
         std::cout<< "Defragmentare Terminata" << std::endl;
@@ -402,6 +415,7 @@ void GUI::runDefragmentStep() {
     while (defragEmptySlot < disk.getNumBlocks() && disk.getBlockRef(defragEmptySlot).isBad() == true) {
         defragEmptySlot++;
     }
+
     if (defragBlockToScan < defragEmptySlot) {
         defragBlockToScan = defragEmptySlot;
     }
@@ -411,20 +425,67 @@ void GUI::runDefragmentStep() {
         return;
     }
 
-    if (Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
+    if (const Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
         if (defragBlockToScan != defragEmptySlot) {
-            Block &emptyBlock = disk.getBlockRef(defragEmptySlot);
-            const unsigned long fileId = blockToScan.getContent();
-            const int size = blockToScan.getSize();
-            emptyBlock.setData(defragEmptySlot, true, fileId, size);
-            table.updateBlockAddress(static_cast<int>(fileId), defragBlockToScan, defragEmptySlot);
-            blockToScan.clear();
+            currentState = DEFRAGMENTATION_ANIMATION;
+
+            animationDefragmentationStartPos = getPixelPosition(defragBlockToScan);
+            animationDefragmentationEndPos = getPixelPosition(defragEmptySlot);
+
+            const Block &block = disk.getBlock(defragBlockToScan);
+
+            const unsigned long fileId = block.getContent();
+            int colorIndex = static_cast<int>(fileId) % 5;
+            switch (colorIndex) {
+                case 0: animatedDefragmentationBlock.setFillColor(sf::Color(255, 128, 0)); break;
+                case 1: animatedDefragmentationBlock.setFillColor(sf::Color(0, 255, 255)); break;
+                case 2: animatedDefragmentationBlock.setFillColor(sf::Color(255, 0, 128)); break;
+                case 3: animatedDefragmentationBlock.setFillColor(sf::Color(255, 200, 0)); break;
+                case 4: animatedDefragmentationBlock.setFillColor(sf::Color(60, 150, 255)); break;
+                default: animatedDefragmentationBlock.setFillColor(sf::Color(120, 160, 255, 100)); break;
+            }
+
+            animatedDefragmentationBlock.setPosition(animationDefragmentationStartPos);
+
+            animationDefragmentationProgress = 0.f;
+
+            return;
 
         }
         defragEmptySlot++;
     }
     defragBlockToScan++;
 }
+
+void GUI::runDefragmentAnimation() {
+    const float dt = animationDefragmentation.restart().asSeconds();
+    animationDefragmentationProgress += dt * animationDefragmentationSpeed;
+
+    if (animationDefragmentationProgress >= 1.f) {
+        animationDefragmentationProgress = 1.f;
+
+        Block &blockToScan = disk.getBlockRef(defragBlockToScan);
+        Block &emptyBlock = disk.getBlockRef(defragEmptySlot);
+
+        const unsigned long fileId = blockToScan.getContent();
+        const int size = blockToScan.getSize();
+
+        emptyBlock.setData(defragEmptySlot, true, fileId, size);
+        table.updateBlockAddress(static_cast<int>(fileId), defragBlockToScan, defragEmptySlot);
+        blockToScan.clear();
+
+        defragEmptySlot++;
+        defragBlockToScan++;
+
+        currentState = DEFRAGMENTING;
+        return;
+    }
+
+    const float currentX = animationDefragmentationStartPos.x + (animationDefragmentationEndPos.x - animationDefragmentationStartPos.x) * animationDefragmentationProgress;
+    const float currentY = animationDefragmentationStartPos.y + (animationDefragmentationEndPos.y - animationDefragmentationStartPos.y) * animationDefragmentationProgress;
+
+    animatedDefragmentationBlock.setPosition(currentX, currentY);
+};
 
 void GUI::drawToolTip() {
     if (hoveredBlockIndex == -1) {
@@ -516,6 +577,9 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             blockShape.setSize(sf::Vector2f(BLOCK_LENGTH, BLOCK_LENGTH));
             blockShape.setOutlineColor(sf::Color::Black);
             blockShape.setOutlineThickness(1);
+            animatedDefragmentationBlock.setSize(sf::Vector2f(BLOCK_LENGTH, BLOCK_LENGTH));
+            animatedDefragmentationBlock.setOutlineColor(sf::Color::Black);
+            animatedDefragmentationBlock.setOutlineThickness(1);
 
             if (font.loadFromFile("fonts/arial.ttf") == false) {
                 std::cout<< "EROARE: Nu s-a putut incarca fontul" << std::endl;
@@ -584,6 +648,8 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             defragBlockToScan = 0;
             defragEmptySlot = 0;
             hoveredBlockIndex = -1;
+            animationDefragmentationSpeed = 5.f;
+            animationDefragmentationProgress = 0.f;
         }
 
 void GUI::run() {
@@ -898,9 +964,18 @@ void GUI::run() {
                     runDefragmentStep();
                 }
 
+                else if (currentState == DEFRAGMENTATION_ANIMATION) {
+                    runDefragmentAnimation();
+                }
+
                 window.clear(sf::Color(30, 30, 50));
                 drawDiskMap(static_cast<float>(pulse));
-                if (currentState != NORMAL && currentState != DEFRAGMENTING) {
+
+                if (currentState == DEFRAGMENTATION_ANIMATION) {
+                    window.draw(animatedDefragmentationBlock);
+                }
+
+                if (currentState != NORMAL && currentState != DEFRAGMENTING && currentState != DEFRAGMENTATION_ANIMATION) {
                     drawInputBox();
                 }
 

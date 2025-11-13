@@ -11,7 +11,7 @@
 
 enum GuiState {
     NORMAL, INPUT_DELETE, INPUT_ADD_ID, INPUT_ADD_SIZE, INPUT_ADD_NAME, INPUT_TRUNCATE_ADD_ID, INPUT_TRUNCATE, INPUT_EXTEND,
-    INPUT_EXTEND_ADD_ID, DEFRAGMENTING
+    INPUT_EXTEND_ADD_ID, DEFRAGMENTING, DEFRAGMENTATION_ANIMATION
 };
 
 class GUI {
@@ -33,7 +33,12 @@ class GUI {
         sf::RectangleShape toolTipBackground;
         sf::RectangleShape fragmentationBarBackground;
         sf::RectangleShape fragmentationBarFill;
-        sf::Clock globalClock;
+        sf::RectangleShape animatedDefragmentationBlock;
+        sf::Vector2f animationDefragmentationStartPos;
+        sf::Vector2f animationDefragmentationEndPos;
+        float animationDefragmentationProgress;
+        float animationDefragmentationSpeed;
+        sf::Clock globalClock, animationDefragmentation;
         int tempFileId;
         int tempFileSize;
         int defragEmptySlot;
@@ -42,6 +47,10 @@ class GUI {
         int hoveredBlockIndex;
 
         void runDefragmentStep();
+
+        void runDefragmentAnimation();
+
+        sf::Vector2f getPixelPosition(int index) const;
 
         void handleSubmitExtend();
 
