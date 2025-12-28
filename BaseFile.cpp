@@ -1,6 +1,10 @@
-#include "File.h"
+#include "BaseFile.h"
 
-size_t File::calculateChecksumXOR(const std::vector<Block> &blocksToScan) {
+#include "Exceptions.h"
+
+int BaseFile::totalFiles = 0;
+
+size_t BaseFile::calculateChecksumXOR(const std::vector<Block> &blocksToScan) {
     size_t sum = 0;
     for (const auto & block : blocksToScan) {
         sum ^= block.getContent();
@@ -9,7 +13,7 @@ size_t File::calculateChecksumXOR(const std::vector<Block> &blocksToScan) {
     return sum;
 }
 
-size_t File::calculateChecksumWeighted(const std::vector<Block> &blocksToScan) {
+size_t BaseFile::calculateChecksumWeighted(const std::vector<Block> &blocksToScan) {
     size_t sum = 0;
     for (int i = 0; i < static_cast<int>(blocksToScan.size()); i++) {
         sum += blocksToScan[i].getContent() * (i + 1);
@@ -17,7 +21,7 @@ size_t File::calculateChecksumWeighted(const std::vector<Block> &blocksToScan) {
     return sum;
 }
 
-size_t File::calculateChecksumAdler32(const std::vector<Block> &blocksToScan) {
+size_t BaseFile::calculateChecksumAdler32(const std::vector<Block> &blocksToScan) {
     size_t sumA = 1;
     size_t sumB = 0;
     for (const auto & block : blocksToScan) {
@@ -31,8 +35,8 @@ size_t File::calculateChecksumAdler32(const std::vector<Block> &blocksToScan) {
     return (sumB << 16) | sumA;
 }
 
-File::File(int id, int size, const std::string &name ,
-                      checksumAlgorithm alg) {
+BaseFile::BaseFile(const int id, const int size, const std::string &name ,
+                      const checksumAlgorithm alg, const bool isHighPriority, const bool markedForDeletion, const bool unmovable) {
     this->id = id;
     this->name = name;
     fileBlocks.resize(size);
@@ -40,29 +44,33 @@ File::File(int id, int size, const std::string &name ,
     for (int i = 0; i < size; i++) {
         fileBlocks[i].setData( i + 1,true, this->id, 4096);
     }
+    this->isHighPriority = isHighPriority;
+    this->markedForDeletion = markedForDeletion;
+    this->unmovable = unmovable;
+    totalFiles++;
 }
 
-[[nodiscard]] int File::getNumBlocks() const {
+[[nodiscard]] int BaseFile::getNumBlocks() const {
     return static_cast<int>(fileBlocks.size());
 }
 
-[[nodiscard]] int File::getId() const {
+[[nodiscard]] int BaseFile::getId() const {
     return this->id;
 }
 
-[[nodiscard]]const std::string &File::getName() const {
+[[nodiscard]]const std::string &BaseFile::getName() const {
     return name;
 }
 
-[[nodiscard]] const std::vector<int> &File::getBlockMap() const {
+[[nodiscard]] const std::vector<int> &BaseFile::getBlockMap() const {
     return blockMap;
 }
 
-[[nodiscard]] const Block &File::getBlock(const int index) const {
+[[nodiscard]] const Block &BaseFile::getBlock(const int index) const {
     return fileBlocks[index];
 }
 
-void File::truncate(const int newSize, DiskSpaceMap &disk) {
+void BaseFile::truncate(const int newSize, DiskSpaceMap &disk) {
     std::vector<int> blocksToFree;
     if (newSize >= static_cast<int>(fileBlocks.size())) {
         return;
@@ -76,7 +84,7 @@ void File::truncate(const int newSize, DiskSpaceMap &disk) {
     disk.freeBlocks(blocksToFree);
 }
 
-bool File::extend(const int blocksToAdd, DiskSpaceMap &disk) { //aici se produce fragmentarea
+bool BaseFile::extend(const int blocksToAdd, DiskSpaceMap &disk) { //aici se produce fragmentarea
     if (blockMap.empty() == true) {
         return false;
     }
@@ -101,7 +109,7 @@ bool File::extend(const int blocksToAdd, DiskSpaceMap &disk) { //aici se produce
     return true;
 }
 
-void File::updatePhysicalAddress(const int oldIndex, const int newIndex) {
+void BaseFile::updatePhysicalAddress(const int oldIndex, const int newIndex) {
     for (int & i : blockMap) {
         if (i == oldIndex) {
             i = newIndex;
@@ -109,11 +117,11 @@ void File::updatePhysicalAddress(const int oldIndex, const int newIndex) {
     }
 }
 
-void File::setBlockMap(const std::vector<int> &map) {
+void BaseFile::setBlockMap(const std::vector<int> &map) {
     blockMap = map;
 }
 
-[[nodiscard]] size_t File::getMasterChecksum() const {
+[[nodiscard]] size_t BaseFile::getMasterChecksum() const {
     switch (checksumAlgorithmUsed) {
         case checksumAlgorithm::ADLER32: return calculateChecksumAdler32(this->fileBlocks);
 
@@ -125,11 +133,11 @@ void File::setBlockMap(const std::vector<int> &map) {
     }
 }
 
-[[nodiscard]] bool File::verifyChecksum(const DiskSpaceMap &disk) const {
+void BaseFile::verifyChecksum(const DiskSpaceMap &disk) const {
     const size_t masterChecksum = getMasterChecksum();
     std::vector<Block> physicalBlocks;
 
-    for (int blockIndex : blockMap) {
+    for (const int blockIndex : blockMap) {
         const Block &block = disk.getBlock(blockIndex);
         physicalBlocks.push_back(block);
     }
@@ -145,13 +153,36 @@ void File::setBlockMap(const std::vector<int> &map) {
         default: physicalChecksum = calculateChecksumAdler32(physicalBlocks);//consecvent cu getMasterChecksum
     }
 
-    return physicalChecksum == masterChecksum;
+    if (physicalChecksum != masterChecksum) {
+        throw CorruptedDataException();
+    }
 }
 
-std::ostream &operator<<(std::ostream &os, const File &file) {
-    os<<"File "<<file.id<<": "<<file.name << " -> ";
-    for (const auto & fileBlock : file.fileBlocks) {
+void BaseFile::display(std::ostream &os) const {
+    os<<"File "<<this->id<<": "<<this->name << " -> ";
+    doPrint(os);
+    for (const auto & fileBlock : this->fileBlocks) {
         os<< fileBlock << " ";
     }
+};
+
+void BaseFile::setUnmovable() {
+    unmovable = true;
+}
+
+void BaseFile::setMarkedForDeletion() {
+    markedForDeletion = true;
+}
+
+void BaseFile::setIsHighPriority() {
+    isHighPriority = true;
+}
+
+BaseFile::~BaseFile() {
+    totalFiles--;
+}
+
+std::ostream &operator<<(std::ostream &os, const BaseFile &file) {
+    file.display(os);
     return os;
 }

@@ -1,27 +1,33 @@
 #pragma once
 #include <iostream>
-#include "File.h"
+#include "BaseFile.h"
 
 #ifndef OOP_ALLOCATIONTABLE_H
 #define OOP_ALLOCATIONTABLE_H
 
 class AllocationTable {
 private:
-    std::vector<File> files;
+    std::vector<std::unique_ptr<BaseFile>> files;
     std::string formatType;
 
 public:
     explicit AllocationTable(const std::string &type = "", int initialCapacity = 2);
 
-    File *findFileById(const int &fileId);
+    AllocationTable(const AllocationTable &other);
 
-    [[nodiscard]] const std::vector<File> &getFiles();
+    [[nodiscard]] BaseFile *findFileById(const int &fileId) const;
 
-    void updateBlockAddress(int fileId, int oldIndex, int newIndex);
+    [[nodiscard]] const std::vector<std::unique_ptr<BaseFile>> &getFiles();
 
-    void addFile(const File &fileToAdd);
+    void updateBlockAddress(int fileId, int oldIndex, int newIndex) const;
+
+    void addFile(const BaseFile &fileToAdd);
 
     bool deleteFile(const int &fileId);
+
+    void runMaintenance(DiskSpaceMap &disk) const;
+
+    AllocationTable &operator=(AllocationTable other);
 
     friend std::ostream &operator<<(std::ostream &os, const AllocationTable &allocationTable);
 

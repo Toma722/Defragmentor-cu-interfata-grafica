@@ -1,8 +1,13 @@
 #include "GUI.h"
-#include "File.h"
+#include "BaseFile.h"
 #include "AllocationTable.h"
 #include <cassert>
 #include <cmath>
+
+#include "Exceptions.h"
+#include "SystemFile.h"
+#include "TempFile.h"
+#include "UserFile.h"
 
 void GUI::handleSubmitExtend() {
     if (inputText.empty()) {
@@ -18,18 +23,22 @@ void GUI::handleSubmitExtend() {
         currentState = NORMAL;
         return;
     }
-    File *fileToExtend = table.findFileById(tempFileId);
+    BaseFile *fileToExtend = table.findFileById(tempFileId);
+
     if (fileToExtend == nullptr) {
         inputPromptText.setString("Fisierul nu exista (Esc = RETURN)");
         return;
     }
-    if (const File temp(0, tempFileSize); disk.findSpace(temp) == -1) {
-        inputPromptText.setString("Nu Exista Loc (Defragmentare sau marire disc! ESC = RETURN)");
-        return;
+
+    try {
+        fileToExtend->extend(tempFileSize, disk);
+        currentState = NORMAL;
+        inputText = "";
     }
-    fileToExtend->extend(tempFileSize, disk);
-    currentState = NORMAL;
-    inputText = "";
+    catch (const DiskFullException &e) {
+        inputPromptText.setString(std::string(e.what()) + " (ESC = RETURN)");
+        inputBackground.setOutlineColor(sf::Color::Red);
+    }
 }
 
 void GUI::handleSubmitExtendAddId() {
@@ -69,7 +78,7 @@ void GUI::handleSubmitTruncate() {
                 currentState = NORMAL;
                 return;
             }
-            File *fileToTruncate = table.findFileById(tempFileId);
+            BaseFile *fileToTruncate = table.findFileById(tempFileId);
             if (fileToTruncate == nullptr) {
                 inputPromptText.setString("Fisierul Nu Exista! (ESC = RETURN)");
                 return;
@@ -156,7 +165,7 @@ void GUI::handleSubmitAddSize() {
                     return;
                 }
 
-                if (const File temp(0, tempFileSize); disk.findSpace(temp) == -1) {
+                if (disk.findSpace(tempFileSize) == -1) {
                     inputPromptText.setString("Fisierul nu incape! (Defragmentare sau marire disc! ESC = RETURN)");
                     return;
                 }
@@ -165,22 +174,41 @@ void GUI::handleSubmitAddSize() {
                 inputPromptText.setString("Introduceti Numele Fisierului: ");
                 inputText = "";
 
-            }
+}
 
 void GUI::handleSubmitAddName() {
-                File newFile(this->tempFileId, this->tempFileSize, inputText);
+        try {
+            if (inputText.find(".sys") != std::string::npos) {
+                SystemFile newFile(tempFileId, tempFileSize, inputText, ADLER32, 9);
                 const std::vector<int> map = disk.allocateFile(newFile);
-                if (map.empty()) {
-                    std::cout<< "Nu s-a putut adauga fisierul!" << std::endl;
-                    return;
-                }
                 newFile.setBlockMap(map);
                 table.addFile(newFile);
-
-                currentState = NORMAL;
-                inputText = "";
-
             }
+
+            else if (inputText.find(".tmp") != std::string::npos) {
+                TempFile newFile(tempFileId, tempFileSize, inputText, ADLER32, "KernelProcess");
+                const std::vector<int> map = disk.allocateFile(newFile);
+                newFile.setBlockMap(map);
+                table.addFile(newFile);
+            }
+
+            else {
+                UserFile newFile(tempFileId, tempFileSize, inputText, ADLER32, "Admin");
+                const std::vector<int> map = disk.allocateFile(newFile);
+                newFile.setBlockMap(map);
+                table.addFile(newFile);
+            }
+
+
+            currentState = NORMAL;
+            inputText = "";
+        }
+        catch (const DiskFullException &e) {
+            inputPromptText.setString(std::string(e.what()) + " (ESC = RETURN)");
+            inputBackground.setOutlineColor(sf::Color::Red);
+        }
+
+}
 
 void GUI::handleDeleteInput() {
             if (inputText.empty()) {
@@ -199,25 +227,30 @@ void GUI::handleDeleteInput() {
                 return;
             }
 
-            const File *fileToDelete = table.findFileById(static_cast<int>(fileId));
+            const BaseFile *fileToDelete = table.findFileById(static_cast<int>(fileId));
             if (fileToDelete == nullptr) {
                 inputPromptText.setString("Fisierul Nu Exista! (ESC = RETURN)");
                 return;
             }
 
             const std::vector<int>mapToDelete = fileToDelete->getBlockMap();
-            if (table.deleteFile(static_cast<int>(fileId)) == true) {
-                disk.freeBlocks(mapToDelete);
-                std::cout<< "Fisierul a fost sters" << std::endl;
+
+            try {
+                if (table.deleteFile(static_cast<int>(fileId))) {
+                    disk.freeBlocks(mapToDelete);
+
+                    std::cout << "Fisierul a fost sters!" << std::endl;
+
+                    inputText = "";
+                    currentState = NORMAL;
+                }
             }
-            else {
-                std::cout<< "Fisierul nu a putut fi sters" << std::endl;
+            catch (const SecurityException &e) {
+                inputPromptText.setString(std::string(e.what()) + " (ESC = RETURN)");
+                inputBackground.setOutlineColor(sf::Color::Red);
             }
 
-            inputText = "";
-            currentState = NORMAL;
-
-        }
+}
 
 void GUI::drawDiskMap(const float &pulse) {
             for (int i = 0; i < disk.getNumBlocks(); i++) {
@@ -790,10 +823,14 @@ void GUI::run() {
                                 case sf::Keyboard::V: {
 
                                     for (const auto & i : table.getFiles()) {
-
-                                        const bool checksumOK = i.verifyChecksum(disk);
-                                        assert(checksumOK && "CHECKSUM A ESUAT");
-                                        std::cout<< "CHECKSUM OK" << std::endl;
+                                        try {
+                                            i->verifyChecksum(disk);
+                                            std::cout<< "Fisierul " << i->getName() << " este valid! \n";
+                                        }
+                                        catch (const CorruptedDataException &e) {
+                                            std::cout<< e.what() << " la " << i->getName() << std::endl;
+                                            disk.relocateDamagedBlocks(table);
+                                        }
                                     }
                                     break;
                                 }

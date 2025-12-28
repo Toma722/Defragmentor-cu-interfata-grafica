@@ -10,22 +10,24 @@ private:
     int id, size;
     bool occupied;
     unsigned long content;
-    bool isDamaged;
+    bool isDamaged, locked;
 
 public:
-    explicit Block(int id = 0, int size = 0, bool occupied = false, unsigned long content = 0, bool isDamaged = false);
+    explicit Block(int id = 0, int size = 0, bool occupied = false,
+        unsigned long content = 0, bool isDamaged = false, bool locked = false);
 
-    Block(const Block &other) { //cc
+    Block(const Block &other) {
         this->id = other.id;
         this->size = other.size;
         this->occupied = other.occupied;
         this->content = other.content;
         this->isDamaged = other.isDamaged;
+        this->locked = other.locked;
     }
 
     Block &operator=(const Block &other);
 
-    ~Block() = default;//destr
+    ~Block() = default;
 
     friend std::ostream &operator<<(std::ostream &os, const Block &block);
 
@@ -43,6 +45,9 @@ public:
 
     void setData(int blockId, bool isOccupied, unsigned long fileId, int bSize);
 
+    [[nodiscard]] bool getLocked() const;
+
+    void setLocked(bool lock);
 };
 
 

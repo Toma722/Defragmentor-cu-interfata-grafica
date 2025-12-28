@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <memory>
 #include <vector>
 #include "Block.h"
 #include "DiskSpaceMap.h"
@@ -11,12 +12,20 @@ enum checksumAlgorithm {
     XOR, WEIGHTED, ADLER32
 };
 
-class File {
-    private:
+class BaseFile {
+    protected:
         std::vector<Block> fileBlocks;
         std::vector<int> blockMap;
         int id;
         std::string name;
+        static int totalFiles;
+        bool isHighPriority, markedForDeletion, unmovable;
+
+        virtual void doPrint(std::ostream &os) const = 0;
+
+        virtual void storagePriority(DiskSpaceMap &disk) = 0;
+
+    private:
         checksumAlgorithm checksumAlgorithmUsed;
 
         static size_t calculateChecksumXOR(const std::vector<Block> &blocksToScan);
@@ -26,8 +35,9 @@ class File {
         static size_t calculateChecksumAdler32(const std::vector<Block> &blocksToScan);
 
     public:
-        explicit File(int id = 0, int size = 0, const std::string &name = "",
-                      checksumAlgorithm alg = checksumAlgorithm::ADLER32);
+        explicit BaseFile(int id = 0, int size = 0, const std::string &name = "",
+                      checksumAlgorithm alg = checksumAlgorithm::ADLER32, bool isHighPriority = false,
+                      bool markedForDeletion = false, bool unmovable = false);
 
 
         [[nodiscard]] int getNumBlocks() const;
@@ -50,9 +60,21 @@ class File {
 
         [[nodiscard]] size_t getMasterChecksum() const;
 
-        [[nodiscard]] bool verifyChecksum(const DiskSpaceMap &disk) const;
+        void verifyChecksum(const DiskSpaceMap &disk) const;
 
-        friend std::ostream &operator<<(std::ostream &os, const File &file);
+        [[nodiscard]] virtual std::unique_ptr<BaseFile> clone() const = 0;
+
+        void display(std::ostream &os) const;
+
+        void setUnmovable();
+
+        void setMarkedForDeletion();
+
+        void setIsHighPriority();
+
+        friend std::ostream &operator<<(std::ostream &os, const BaseFile &file);
+
+        virtual ~BaseFile();
 };
 
 #endif //OOP_FILE_H

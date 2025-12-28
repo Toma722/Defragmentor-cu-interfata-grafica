@@ -3,7 +3,7 @@
 #include "Block.h"
 #include <vector>
 
-class File;
+class BaseFile;
 class AllocationTable;
 
 #ifndef OOP_DISKSPACEMAP_H
@@ -19,12 +19,13 @@ class DiskSpaceMap {
 
         //void defragment(AllocationTable &table);
 
-        //asta ar fi first-fit
-        [[nodiscard]] int findSpace(const File& file) const;
+        [[nodiscard]] int findSpace(const BaseFile& file) const;
+
+        [[nodiscard]] int findSpace(int numOfBlocks) const;
 
         [[nodiscard]] bool isSpace(int numberOfBlocks) const;
 
-        [[nodiscard]] std::vector<int> allocateFile(const File &file);
+        [[nodiscard]] std::vector<int> allocateFile(const BaseFile &file);
 
         [[nodiscard]] int findFirstFreeBlock() const;
 
@@ -32,7 +33,7 @@ class DiskSpaceMap {
 
         void freeBlocks(const std::vector<int> &blockMap);
 
-        void relocateDamagedBlocks(AllocationTable &table);
+        void relocateDamagedBlocks(const AllocationTable &table);
 
         [[nodiscard]] int getTotalFreeBlocks() const;
 

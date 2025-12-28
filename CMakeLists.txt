@@ -59,11 +59,19 @@ endif()
 add_executable(${MAIN_EXECUTABLE_NAME}
         main.cpp
         Block.cpp
-        File.cpp
+        BaseFile.cpp
         DiskSpaceMap.cpp
         AllocationTable.cpp
         Test.cpp
         GUI.cpp
+        UserFile.cpp
+        UserFile.h
+        TempFile.cpp
+        TempFile.h
+        SystemFile.cpp
+        SystemFile.h
+        Exceptions.cpp
+        Exceptions.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

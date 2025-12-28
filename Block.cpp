@@ -1,14 +1,15 @@
 #include "Block.h"
 
-Block::Block(int id, int size, bool occupied, unsigned long content, bool isDamaged) {//constructor
+Block::Block(int id, int size, bool occupied, unsigned long content, bool isDamaged, bool locked) {
     this->id = id;
     this->size = size;
     this->occupied = occupied;
     this->content = content;
     this->isDamaged = isDamaged;
+    this->locked = locked;
 }
 
-Block &Block::operator=(const Block &other) {//op=
+Block &Block::operator=(const Block &other) {
     if (this == &other) {
         return *this;
     }
@@ -18,6 +19,7 @@ Block &Block::operator=(const Block &other) {//op=
     this->occupied = other.occupied;
     this->content = other.content;
     this->isDamaged = other.isDamaged;
+    this->locked = other.locked;
     return *this;
 }
 
@@ -58,6 +60,14 @@ void Block::setData(const int blockId, const bool isOccupied, const unsigned lon
     this->occupied = isOccupied;
     this->content = fileId;
     this->size = bSize;
+}
+
+bool Block::getLocked() const {
+    return this->locked;
+}
+
+void Block::setLocked(bool lock) {
+    this->locked = lock;
 }
 
 void Block::markAsBad() {
