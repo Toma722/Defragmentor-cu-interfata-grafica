@@ -76,7 +76,6 @@ void AllocationTable::runMaintenance(DiskSpaceMap &disk) const {
 }
 
 AllocationTable::AllocationTable(const AllocationTable &other) : formatType(other.formatType) {
-    formatType = other.formatType;
     files.reserve(other.files.size());
     for (const auto & file : other.files) {
         files.push_back(file->clone());
