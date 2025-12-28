@@ -45,8 +45,6 @@ public:
 
     void setData(int blockId, bool isOccupied, unsigned long fileId, int bSize);
 
-    [[nodiscard]] bool getLocked() const;
-
     void setLocked(bool lock);
 };
 

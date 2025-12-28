@@ -62,10 +62,6 @@ void Block::setData(const int blockId, const bool isOccupied, const unsigned lon
     this->size = bSize;
 }
 
-bool Block::getLocked() const {
-    return this->locked;
-}
-
 void Block::setLocked(bool lock) {
     this->locked = lock;
 }

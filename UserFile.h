@@ -17,7 +17,7 @@ class UserFile : public BaseFile {
 
         void doPrint(std::ostream &os) const override;
 
-        [[nodiscard]] std::string getOwnerName() const;
+        [[nodiscard]] const std::string &getOwnerName() const;
 
         [[nodiscard]] bool getIsHidden() const;
 

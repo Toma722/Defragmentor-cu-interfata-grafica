@@ -836,6 +836,7 @@ void GUI::run() {
                                 }
 
                                 case sf::Keyboard::R: {
+                                    table.runMaintenance(disk);
                                     disk.relocateDamagedBlocks(table);
                                     break;
                                 }

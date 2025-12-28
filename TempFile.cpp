@@ -16,7 +16,7 @@ void TempFile::storagePriority(DiskSpaceMap &disk) {
     }
 }
 
-std::string TempFile::getSourceProcess() const {
+const std::string &TempFile::getSourceProcess() const {
     return sourceProcess;
 }
 

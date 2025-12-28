@@ -50,7 +50,7 @@ bool UserFile::getIsHidden() const {
     return isHidden;
 }
 
-std::string UserFile::getOwnerName() const {
+const std::string &UserFile::getOwnerName() const {
     return ownerName;
 }
 

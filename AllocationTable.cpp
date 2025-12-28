@@ -51,7 +51,7 @@ void AllocationTable::runMaintenance(DiskSpaceMap &disk) const {
         if (auto *system = dynamic_cast<SystemFile*>(file.get())) {
             if (system->getSecurityLevel() > 5) {
                 system->setUnmovable();
-                for (auto &block : system->getBlockMap()) {
+                for (const auto &block : system->getBlockMap()) {
                     disk.getBlockRef(block).setLocked(true);
                 }
             }
@@ -75,10 +75,10 @@ void AllocationTable::runMaintenance(DiskSpaceMap &disk) const {
     }
 }
 
-AllocationTable::AllocationTable(const AllocationTable &other) {
+AllocationTable::AllocationTable(const AllocationTable &other) : formatType(other.formatType) {
     formatType = other.formatType;
     files.reserve(other.files.size());
-    for (auto & file : other.files) {
+    for (const auto & file : other.files) {
         files.push_back(file->clone());
     }
 }
