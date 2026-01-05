@@ -14,8 +14,6 @@ class TempFile : public BaseFile {
 
         void doPrint(std::ostream &os) const override;
 
-        [[nodiscard]] const std::string &getSourceProcess() const;
-
         void applyMaintenance(DiskSpaceMap &disk) override;
 
         void storagePriority(DiskSpaceMap &disk) override;

@@ -33,10 +33,6 @@ void SystemFile::applyMaintenance(DiskSpaceMap &disk) {
     }
 }
 
-int SystemFile::getSecurityLevel() const {
-    return securityLevel;
-}
-
 std::unique_ptr<BaseFile> SystemFile::clone() const {
     return std::make_unique<SystemFile>(*this);
 };

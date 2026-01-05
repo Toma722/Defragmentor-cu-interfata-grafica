@@ -12,8 +12,6 @@ class SystemFile : public BaseFile{
 
         [[nodiscard]] std::unique_ptr<BaseFile> clone() const override;
 
-        [[nodiscard]] int getSecurityLevel() const;
-
         void doPrint(std::ostream &os) const override;
 
         void storagePriority(DiskSpaceMap &disk) override;

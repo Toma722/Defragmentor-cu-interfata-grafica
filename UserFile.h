@@ -19,8 +19,6 @@ class UserFile : public BaseFile {
 
         [[nodiscard]] const std::string &getOwnerName() const;
 
-        [[nodiscard]] bool getIsHidden() const;
-
         void storagePriority(DiskSpaceMap &disk) override;
 
         void applyMaintenance(DiskSpaceMap &disk) override;

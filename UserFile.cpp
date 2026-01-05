@@ -60,10 +60,6 @@ void UserFile::applyMaintenance(DiskSpaceMap &disk) {
     }
 }
 
-bool UserFile::getIsHidden() const {
-    return isHidden;
-}
-
 const std::string &UserFile::getOwnerName() const {
     return ownerName;
 }

@@ -23,7 +23,7 @@ void GUI::handleSubmitExtend() {
         currentState = NORMAL;
         return;
     }
-    BaseFile *fileToExtend = table.findFileById(tempFileId);
+    const BaseFile *fileToExtend = table.findFileById(tempFileId);
 
     if (fileToExtend == nullptr) {
         inputPromptText.setString("Fisierul nu exista (Esc = RETURN)");

@@ -69,19 +69,13 @@ class BaseFile {
 
         void display(std::ostream &os) const;
 
-        void setUnmovable();
-
         [[nodiscard]] bool isUnmovable() const;
-
-        void setMarkedForDeletion();
 
         [[nodiscard]] bool isMarkedForDeletion() const;
 
         static int getTotalFiles() {
             return totalFiles;
         };
-
-        void setIsHighPriority();
 
         friend std::ostream &operator<<(std::ostream &os, const BaseFile &file);
 

@@ -184,18 +184,6 @@ void BaseFile::display(std::ostream &os) const {
     }
 };
 
-void BaseFile::setUnmovable() {
-    unmovable = true;
-}
-
-void BaseFile::setMarkedForDeletion() {
-    markedForDeletion = true;
-}
-
-void BaseFile::setIsHighPriority() {
-    isHighPriority = true;
-}
-
 bool BaseFile::isUnmovable() const {
     return unmovable;
 }

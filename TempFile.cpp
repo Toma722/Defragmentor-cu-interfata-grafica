@@ -24,10 +24,6 @@ void TempFile::applyMaintenance(DiskSpaceMap &disk) {
     }
 }
 
-const std::string &TempFile::getSourceProcess() const {
-    return sourceProcess;
-}
-
 std::unique_ptr<BaseFile> TempFile::clone() const {
     return std::make_unique<TempFile>(*this);
 };
