@@ -460,7 +460,7 @@ void GUI::runDefragmentStep()    {
 
     if (const Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
         if (defragBlockToScan != defragEmptySlot) {
-            BaseFile *file = table.findFileById(static_cast<int>(blockToScan.getContent()));
+            const BaseFile *file = table.findFileById(static_cast<int>(blockToScan.getContent()));
             if (file && file->isUnmovable()) {
                 defragBlockToScan++;
                 return;
