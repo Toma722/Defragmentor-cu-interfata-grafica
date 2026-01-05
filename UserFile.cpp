@@ -46,6 +46,20 @@ void UserFile::storagePriority(DiskSpaceMap &disk) {
     }
 }
 
+void UserFile::applyMaintenance(DiskSpaceMap &disk) {
+    if (disk.getFragmentationPercentage() > 0.5 && this->getOwnerName() == "Guest") {
+        markedForDeletion = true;
+    }
+
+    if (this->ownerName == "Admin") {
+        isHighPriority = true;
+    }
+
+    else if (this->ownerName == "Guest" && this->isHidden == true) {
+        markedForDeletion = true;
+    }
+}
+
 bool UserFile::getIsHidden() const {
     return isHidden;
 }

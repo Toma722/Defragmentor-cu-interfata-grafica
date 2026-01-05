@@ -62,7 +62,7 @@ void Block::setData(const int blockId, const bool isOccupied, const unsigned lon
     this->size = bSize;
 }
 
-void Block::setLocked(bool lock) {
+void Block::setLocked(const bool lock) {
     this->locked = lock;
 }
 

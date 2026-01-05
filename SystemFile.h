@@ -17,6 +17,8 @@ class SystemFile : public BaseFile{
         void doPrint(std::ostream &os) const override;
 
         void storagePriority(DiskSpaceMap &disk) override;
+
+        void applyMaintenance(DiskSpaceMap &disk) override;
 };
 
 

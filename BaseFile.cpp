@@ -4,10 +4,24 @@
 
 int BaseFile::totalFiles = 0;
 
+BaseFile::BaseFile(const BaseFile &other) {
+    this->id = other.id;
+    this->name = other.name;
+    this->fileBlocks = other.fileBlocks;
+    this->blockMap = other.blockMap;
+    this->isHighPriority = other.isHighPriority;
+    this->markedForDeletion = other.markedForDeletion;
+    this->unmovable = other.unmovable;
+    this->checksumAlgorithmUsed = other.checksumAlgorithmUsed;
+
+    totalFiles++;
+}
+
 size_t BaseFile::calculateChecksumXOR(const std::vector<Block> &blocksToScan) {
     size_t sum = 0;
     for (const auto & block : blocksToScan) {
         sum ^= block.getContent();
+        sum += (block.isBad() ? 1 : 0);
     }
 
     return sum;
@@ -17,6 +31,7 @@ size_t BaseFile::calculateChecksumWeighted(const std::vector<Block> &blocksToSca
     size_t sum = 0;
     for (int i = 0; i < static_cast<int>(blocksToScan.size()); i++) {
         sum += blocksToScan[i].getContent() * (i + 1);
+        sum += (blocksToScan[i].isBad() ? 1 : 0);
     }
     return sum;
 }
@@ -27,6 +42,7 @@ size_t BaseFile::calculateChecksumAdler32(const std::vector<Block> &blocksToScan
     for (const auto & block : blocksToScan) {
         constexpr size_t prime = 65521;
         sumA += block.getContent();
+        sumA += (block.isBad() ? 1 : 0);
         sumA %= prime;
         sumB += sumA;
         sumB %= prime;
@@ -139,10 +155,12 @@ void BaseFile::verifyChecksum(const DiskSpaceMap &disk) const {
 
     for (const int blockIndex : blockMap) {
         const Block &block = disk.getBlock(blockIndex);
+
         physicalBlocks.push_back(block);
     }
 
     size_t physicalChecksum;
+
     switch (checksumAlgorithmUsed) {
         case ADLER32: physicalChecksum = calculateChecksumAdler32(physicalBlocks); break;
 
@@ -177,6 +195,15 @@ void BaseFile::setMarkedForDeletion() {
 void BaseFile::setIsHighPriority() {
     isHighPriority = true;
 }
+
+bool BaseFile::isUnmovable() const {
+    return unmovable;
+}
+
+bool BaseFile::isMarkedForDeletion() const {
+    return markedForDeletion;
+}
+
 
 BaseFile::~BaseFile() {
     totalFiles--;

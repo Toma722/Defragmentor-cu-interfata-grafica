@@ -16,6 +16,8 @@ class TempFile : public BaseFile {
 
         [[nodiscard]] const std::string &getSourceProcess() const;
 
+        void applyMaintenance(DiskSpaceMap &disk) override;
+
         void storagePriority(DiskSpaceMap &disk) override;
 };
 

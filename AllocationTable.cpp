@@ -1,7 +1,7 @@
 #include "AllocationTable.h"
+
+#include "Exceptions.h"
 #include "SystemFile.h"
-#include "TempFile.h"
-#include "UserFile.h"
 
 AllocationTable::AllocationTable(const std::string &type, const int initialCapacity) {
     files.reserve(initialCapacity);
@@ -37,6 +37,10 @@ void AllocationTable::addFile(const BaseFile &fileToAdd) {
 bool AllocationTable::deleteFile(const int &fileId) {
     for (int i = 0; i < static_cast<int>(files.size()); i++) {
         if (files[i]->getId() == fileId) {
+            if (files[i]->isUnmovable() == true) {
+                throw SecurityException();
+            }
+
             std::swap(files[i], files.back());
             files.pop_back();
             return true;
@@ -46,31 +50,17 @@ bool AllocationTable::deleteFile(const int &fileId) {
     return false;
 }
 
-void AllocationTable::runMaintenance(DiskSpaceMap &disk) const {
-    for (auto &file : files) {
-        if (auto *system = dynamic_cast<SystemFile*>(file.get())) {
-            if (system->getSecurityLevel() > 5) {
-                system->setUnmovable();
-                for (const auto &block : system->getBlockMap()) {
-                    disk.getBlockRef(block).setLocked(true);
-                }
-            }
-        }
+void AllocationTable::runMaintenance(DiskSpaceMap &disk) {
+    for (int i = 0; i < static_cast<int>(files.size()); i++) {
+        files[i]->storagePriority(disk);
+        files[i]->applyMaintenance(disk);
 
-        if (auto *user = dynamic_cast<UserFile*>(file.get())) {
-            if (user->getOwnerName() == "Admin") {
-                user->setIsHighPriority();
-            }
+        if (files[i]->isMarkedForDeletion()) {
+            disk.freeBlocks(files[i]->getBlockMap());
+            std::swap(files[i], files.back());
+            files.pop_back();
 
-            else if (user->getOwnerName() == "Guest" && user->getIsHidden() == true) {
-                user->setMarkedForDeletion();
-            }
-        }
-
-        if (auto *temp = dynamic_cast<TempFile*>(file.get())) {
-            if (temp->getSourceProcess() == "WebBrowser") {
-                temp->setMarkedForDeletion();
-            }
+            i--;
         }
     }
 }

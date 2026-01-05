@@ -16,6 +16,14 @@ void TempFile::storagePriority(DiskSpaceMap &disk) {
     }
 }
 
+void TempFile::applyMaintenance(DiskSpaceMap &disk) {
+    double freePercent = static_cast<double>(disk.getTotalFreeBlocks()) / disk.getNumBlocks();
+
+    if (freePercent < 0.1 && this->sourceProcess == "WebBrowser") {
+        markedForDeletion = true;
+    }
+}
+
 const std::string &TempFile::getSourceProcess() const {
     return sourceProcess;
 }

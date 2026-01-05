@@ -4,9 +4,14 @@
 
 ### Scurta descriere: 
 
-Acest proiect simuleaza vizual un sistem de fisiere, in care se regasesc urmatoarele functionalitati: crearea fisierelor,
-stergerea, extinderea, truncherea si un sistem de verificare a Checksum-ului calculat atat pe disc cat si in registrul de alocare.
-Acesta este interactiv, iar astfel se poate interactiona cu discul simulat prin intermediul unei interfete grafice.
+Acest proiect simuleaza vizual un sistem de fisiere, în care se regasesc functionalitatile
+esentiale de gestionare a datelor: crearea, stergerea, extinderea si trunchierea fisierelor.
+Sistemul integreaza un mecanism de verificare a integritatii prin Checksum capabil sa identifice erori.
+Aplicatia este interactiva, permitand utilizatorului sa interactioneze cu discul simulat
+prin intermediul interfetei grafice (GUI). Aceasta ofera feedback vizual in timp real 
+asupra modului in care fisierele (de tip System, User sau Temp) sunt alocate, 
+monitorizeaza gradul de fragmentare si permite executia unor procese de mentenanta 
+pentru optimizarea spatiului de stocare.
 
 ### Tema 0
 

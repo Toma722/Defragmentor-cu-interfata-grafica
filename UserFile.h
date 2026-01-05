@@ -22,6 +22,8 @@ class UserFile : public BaseFile {
         [[nodiscard]] bool getIsHidden() const;
 
         void storagePriority(DiskSpaceMap &disk) override;
+
+        void applyMaintenance(DiskSpaceMap &disk) override;
 };
 
 

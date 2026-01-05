@@ -23,8 +23,6 @@ class BaseFile {
 
         virtual void doPrint(std::ostream &os) const = 0;
 
-        virtual void storagePriority(DiskSpaceMap &disk) = 0;
-
     private:
         checksumAlgorithm checksumAlgorithmUsed;
 
@@ -36,9 +34,14 @@ class BaseFile {
 
     public:
         explicit BaseFile(int id = 0, int size = 0, const std::string &name = "",
-                      checksumAlgorithm alg = checksumAlgorithm::ADLER32, bool isHighPriority = false,
-                      bool markedForDeletion = false, bool unmovable = false);
+                          checksumAlgorithm alg = checksumAlgorithm::ADLER32, bool isHighPriority = false,
+                          bool markedForDeletion = false, bool unmovable = false);
 
+        BaseFile(const BaseFile& other);
+
+        virtual void storagePriority(DiskSpaceMap &disk) = 0;
+
+        virtual void applyMaintenance(DiskSpaceMap &disk) = 0;
 
         [[nodiscard]] int getNumBlocks() const;
 
@@ -68,7 +71,15 @@ class BaseFile {
 
         void setUnmovable();
 
+        [[nodiscard]] bool isUnmovable() const;
+
         void setMarkedForDeletion();
+
+        [[nodiscard]] bool isMarkedForDeletion() const;
+
+        static int getTotalFiles() {
+            return totalFiles;
+        };
 
         void setIsHighPriority();
 

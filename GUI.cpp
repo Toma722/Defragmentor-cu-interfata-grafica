@@ -186,14 +186,14 @@ void GUI::handleSubmitAddName() {
             }
 
             else if (inputText.find(".tmp") != std::string::npos) {
-                TempFile newFile(tempFileId, tempFileSize, inputText, ADLER32, "KernelProcess");
+                TempFile newFile(tempFileId, tempFileSize, inputText, ADLER32, "WebBrowser");
                 const std::vector<int> map = disk.allocateFile(newFile);
                 newFile.setBlockMap(map);
                 table.addFile(newFile);
             }
 
             else {
-                UserFile newFile(tempFileId, tempFileSize, inputText, ADLER32, "Admin");
+                UserFile newFile(tempFileId, tempFileSize, inputText, ADLER32, false, "Guest");
                 const std::vector<int> map = disk.allocateFile(newFile);
                 newFile.setBlockMap(map);
                 table.addFile(newFile);
@@ -460,6 +460,11 @@ void GUI::runDefragmentStep()    {
 
     if (const Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
         if (defragBlockToScan != defragEmptySlot) {
+            BaseFile *file = table.findFileById(static_cast<int>(blockToScan.getContent()));
+            if (file && file->isUnmovable()) {
+                defragBlockToScan++;
+                return;
+            }
             currentState = DEFRAGMENTATION_ANIMATION;
 
             animationDefragmentationStartPos = getPixelPosition(defragBlockToScan);
@@ -568,9 +573,12 @@ void GUI::updateAndDrawDashBoard() {
     const int numOfFreeBlocks = disk.getTotalFreeBlocks();
     const int numOfUsedBlocks = disk.getTotalUsedBlocks();
     const int numOfBadBlocks = disk.getTotalBadBlocks();
+    const int activeFiles = BaseFile::getTotalFiles();
     const double fragmentationPercentage = disk.getFragmentationPercentage() * 100;
 
-    dashBoardText.setString("STATISTICI DISC:\nTotal: " + std::to_string(numOfTotalBlocks) +
+
+    dashBoardText.setString("STATISTICI DISC:\nFisiere Active: " + std::to_string(activeFiles) +
+        "\nTotal: " + std::to_string(numOfTotalBlocks) +
         " blocuri\nLiber: " + std::to_string(numOfFreeBlocks) + " blocuri\nOcupate: " + std::to_string(numOfUsedBlocks)
         + " blocuri\nStricate: " + std::to_string(numOfBadBlocks) + " blocuri\nFragmentare: " + std::to_string(fragmentationPercentage) + "%");
 
@@ -718,7 +726,17 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             legendText.setFont(font);
             legendText.setCharacterSize(20);
             legendText.setFillColor(sf::Color::White);
-            legendText.setString("CONTROALE:\n A - Adauga Fisier\n S - Sterge Fisier\n D - Defragmenteaza\n T - Trunchiaza Fisier\n E - Extinde Fisier\n MOUSELEFT - Strica un bloc\n MOUSEWHEEL - ZOOM si Mutare\n R - Repara\n V - Verifica Checksum\n X - Exit");
+            legendText.setString("CONTROALE:\n "
+                                 "A - Adauga Fisier\n"
+                                 " S - Sterge Fisier\n"
+                                 " D - Defragmenteaza\n"
+                                 " T - Trunchiaza Fisier\n"
+                                 " E - Extinde Fisier\n"
+                                 " MOUSELEFT - Strica un bloc\n"
+                                 " MOUSEWHEEL - ZOOM si Mutare\n"
+                                 " R - Repara/Mentenanta\n"
+                                 " V - Verifica Checksum\n"
+                                 " X - Exit");
             legendText.setPosition(SCREEN_WIDTH - legendText.getGlobalBounds().width - 100.f,
                                     SCREEN_HEIGHT - legendText.getGlobalBounds().height - 100.f);
 
@@ -733,8 +751,10 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table){
             dashBoardText.setFillColor(sf::Color::White);
             dashBoardText.setPosition(0.f,SCREEN_HEIGHT - 320.f);
 
+            constexpr float ySpacing = 20.f;
+
             const float barX = dashBoardText.getPosition().x;
-            const float barY = dashBoardText.getGlobalBounds().height + dashBoardText.getPosition().y + 160.f;
+            const float barY = dashBoardText.getGlobalBounds().height + dashBoardText.getPosition().y + 160.f + ySpacing;
 
             fragmentationBarBackground.setSize({300.f, 30.f});
             fragmentationBarBackground.setPosition(barX + 5.f, barY);
@@ -829,7 +849,7 @@ void GUI::run() {
                                         }
                                         catch (const CorruptedDataException &e) {
                                             std::cout<< e.what() << " la " << i->getName() << std::endl;
-                                            disk.relocateDamagedBlocks(table);
+
                                         }
                                     }
                                     break;

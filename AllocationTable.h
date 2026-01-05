@@ -25,7 +25,7 @@ public:
 
     bool deleteFile(const int &fileId);
 
-    void runMaintenance(DiskSpaceMap &disk) const;
+    void runMaintenance(DiskSpaceMap &disk);
 
     AllocationTable &operator=(AllocationTable other);
 
