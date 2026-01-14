@@ -460,7 +460,7 @@ void GUI::runDefragmentStep()    {
 
     if (const Block &blockToScan = disk.getBlockRef(defragBlockToScan); blockToScan.getOccupied() == true) {
         if (defragBlockToScan != defragEmptySlot) {
-            const BaseFile *file = table.findFileById(static_cast<int>(blockToScan.getContent()));
+            const  BaseFile *file = table.findFileById(static_cast<int>(blockToScan.getContent()));
             if (file && file->isUnmovable()) {
                 defragBlockToScan++;
                 return;
@@ -541,6 +541,15 @@ void GUI::drawToolTip() {
     }
     else {
         infoString += "Status: LIBER";
+    }
+
+    BaseFile *file = table.findFileById(static_cast<int>(block.getContent()));
+    if (file) {
+        auto *sysFile = dynamic_cast<SystemFile*>(file);
+
+        if (sysFile) {
+            infoString += "\nNivel Securitate: " + std::to_string(sysFile->getSecurityLevel());
+        }
     }
 
     const sf::Vector2i mouseIntPoz = sf::Mouse::getPosition(window);

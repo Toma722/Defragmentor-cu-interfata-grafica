@@ -14,6 +14,8 @@ class SystemFile : public BaseFile{
 
         void doPrint(std::ostream &os) const override;
 
+        [[nodiscard]] int getSecurityLevel() const;
+
         void storagePriority(DiskSpaceMap &disk) override;
 
         void applyMaintenance(DiskSpaceMap &disk) override;
