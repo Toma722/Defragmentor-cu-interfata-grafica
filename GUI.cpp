@@ -545,7 +545,7 @@ void GUI::drawToolTip() {
 
     BaseFile *file = table.findFileById(static_cast<int>(block.getContent()));
     if (file) {
-        auto *sysFile = dynamic_cast<SystemFile*>(file);
+        const auto *sysFile = dynamic_cast<SystemFile*>(file);
 
         if (sysFile) {
             infoString += "\nNivel Securitate: " + std::to_string(sysFile->getSecurityLevel());
