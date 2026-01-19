@@ -14,41 +14,17 @@ BaseFile::BaseFile(const BaseFile &other) {
     this->unmovable = other.unmovable;
     this->checksumAlgorithmUsed = other.checksumAlgorithmUsed;
 
+    if (checksumAlgorithmUsed == XOR) {
+        strategy = std::make_unique<XorStrategy>();
+    }
+    else if (checksumAlgorithmUsed == WEIGHTED) {
+        strategy = std::make_unique<WeightedStrategy>();
+    }
+    else {
+        strategy = std::make_unique<Adler32Strategy>();
+    }
+
     totalFiles++;
-}
-
-size_t BaseFile::calculateChecksumXOR(const std::vector<Block> &blocksToScan) {
-    size_t sum = 0;
-    for (const auto & block : blocksToScan) {
-        sum ^= block.getContent();
-        sum += (block.isBad() ? 1 : 0);
-    }
-
-    return sum;
-}
-
-size_t BaseFile::calculateChecksumWeighted(const std::vector<Block> &blocksToScan) {
-    size_t sum = 0;
-    for (int i = 0; i < static_cast<int>(blocksToScan.size()); i++) {
-        sum += blocksToScan[i].getContent() * (i + 1);
-        sum += (blocksToScan[i].isBad() ? 1 : 0);
-    }
-    return sum;
-}
-
-size_t BaseFile::calculateChecksumAdler32(const std::vector<Block> &blocksToScan) {
-    size_t sumA = 1;
-    size_t sumB = 0;
-    for (const auto & block : blocksToScan) {
-        constexpr size_t prime = 65521;
-        sumA += block.getContent();
-        sumA += (block.isBad() ? 1 : 0);
-        sumA %= prime;
-        sumB += sumA;
-        sumB %= prime;
-    }
-
-    return (sumB << 16) | sumA;
 }
 
 BaseFile::BaseFile(const int id, const int size, const std::string &name ,
@@ -64,6 +40,15 @@ BaseFile::BaseFile(const int id, const int size, const std::string &name ,
     this->markedForDeletion = markedForDeletion;
     this->unmovable = unmovable;
     totalFiles++;
+    if (alg == XOR) {
+        strategy = std::make_unique<XorStrategy>();
+    }
+    else if (alg == WEIGHTED) {
+        strategy = std::make_unique<WeightedStrategy>();
+    }
+    else {
+        strategy = std::make_unique<Adler32Strategy>();
+    }
 }
 
 [[nodiscard]] int BaseFile::getNumBlocks() const {
@@ -138,15 +123,7 @@ void BaseFile::setBlockMap(const std::vector<int> &map) {
 }
 
 [[nodiscard]] size_t BaseFile::getMasterChecksum() const {
-    switch (checksumAlgorithmUsed) {
-        case checksumAlgorithm::ADLER32: return calculateChecksumAdler32(this->fileBlocks);
-
-        case checksumAlgorithm::WEIGHTED: return calculateChecksumWeighted(this->fileBlocks);
-
-        case checksumAlgorithm::XOR: return calculateChecksumXOR(this->fileBlocks);
-
-        default: return calculateChecksumAdler32(this->fileBlocks);
-    }
+    return strategy->calculate(fileBlocks);
 }
 
 void BaseFile::verifyChecksum(const DiskSpaceMap &disk) const {
@@ -159,17 +136,7 @@ void BaseFile::verifyChecksum(const DiskSpaceMap &disk) const {
         physicalBlocks.push_back(block);
     }
 
-    size_t physicalChecksum;
-
-    switch (checksumAlgorithmUsed) {
-        case ADLER32: physicalChecksum = calculateChecksumAdler32(physicalBlocks); break;
-
-        case WEIGHTED: physicalChecksum = calculateChecksumWeighted(physicalBlocks); break;
-
-        case XOR: physicalChecksum = calculateChecksumXOR(physicalBlocks); break;
-
-        default: physicalChecksum = calculateChecksumAdler32(physicalBlocks);//consecvent cu getMasterChecksum
-    }
+    size_t physicalChecksum = strategy->calculate(physicalBlocks);
 
     if (physicalChecksum != masterChecksum) {
         throw CorruptedDataException();

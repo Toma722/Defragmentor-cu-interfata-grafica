@@ -72,6 +72,12 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         SystemFile.h
         Exceptions.cpp
         Exceptions.h
+        ChecksumStrategy.cpp
+        ChecksumStrategy.h
+        FileFactory.cpp
+        FileFactory.h
+        Utils.h
+        StatTracker.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

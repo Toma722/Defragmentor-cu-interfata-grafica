@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "Block.h"
+#include "ChecksumStrategy.h"
 #include "DiskSpaceMap.h"
 
 #ifndef OOP_FILE_H
@@ -20,17 +21,12 @@ class BaseFile {
         std::string name;
         static int totalFiles;
         bool isHighPriority, markedForDeletion, unmovable;
+        std::unique_ptr<ChecksumStrategy> strategy;
 
         virtual void doPrint(std::ostream &os) const = 0;
 
     private:
         checksumAlgorithm checksumAlgorithmUsed;
-
-        static size_t calculateChecksumXOR(const std::vector<Block> &blocksToScan);
-
-        static size_t calculateChecksumWeighted(const std::vector<Block> &blocksToScan);
-
-        static size_t calculateChecksumAdler32(const std::vector<Block> &blocksToScan);
 
     public:
         explicit BaseFile(int id = 0, int size = 0, const std::string &name = "",

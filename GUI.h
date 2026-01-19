@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "DiskSpaceMap.h"
+#include "StatTracker.h"
 //de modificat video mode
 #ifndef OOP_GUI_H
 #define OOP_GUI_H
@@ -50,6 +51,8 @@ class GUI {
         int defragBlockToScan;
         int blocksPerRow;
         int hoveredBlockIndex;
+        StatTracker<int> fileSizeStats;
+        StatTracker<double> fragmentationStats;
 
         void drawMiniMap(const float &pulse);
 

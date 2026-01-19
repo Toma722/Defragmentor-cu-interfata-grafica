@@ -11,7 +11,7 @@ class UserFile : public BaseFile {
         bool isHidden;
     public:
         explicit UserFile(int id = 0, int size = 0, const std::string &name = "",
-                  checksumAlgorithm alg = checksumAlgorithm::ADLER32, bool isHidden = false, std::string ownerName = "");
+                  checksumAlgorithm alg = ADLER32, bool isHidden = false, std::string ownerName = "");
 
         [[nodiscard]] std::unique_ptr<BaseFile> clone() const override;
 
