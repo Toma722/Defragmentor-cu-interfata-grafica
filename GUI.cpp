@@ -8,6 +8,64 @@
 #include "SystemFile.h"
 #include "Utils.h"
 
+void GUI::drawHelpScreen() {
+    sf::RectangleShape overlay(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
+    overlay.setFillColor(sf::Color(0, 0, 0, 220));
+    window.draw(overlay);
+
+    sf::Text title;
+    title.setFont(font);
+    title.setString("HELP - SIMULATOR");
+    title.setCharacterSize(24);
+    title.setFillColor(sf::Color::Cyan);
+    title.setStyle(sf::Text::Bold);
+    sf::FloatRect textRect = title.getLocalBounds();
+    title.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+    title.setPosition(sf::Vector2f(SCREEN_WIDTH / 2.0f, 40.f));
+    window.draw(title);
+
+    sf::Text content;
+    content.setFont(font);
+    content.setCharacterSize(20);
+    content.setFillColor(sf::Color::White);
+    content.setOutlineColor(sf::Color::Black);
+    content.setOutlineThickness(1.f);
+    content.setPosition(50.f, 80.f);
+
+    std::string helpText = R"([1] CONCEPT
+Acest program simuleaza vizual un sistem de fisiere si alocarea blocurilor pe disc.
+Scopul este intelegerea fragmentarii si a algoritmilor de defragmentare.
+
+[2] CULORI SI SEMNIFICATII
+ - BLOCURI GRI: Spatiu liber (nealocat).
+ - BLOCURI COLORATE: Fisiere active. Culoarea este generata pe baza ID-ului.
+ - BLOCURI NEGRE: Blocuri defecte. Datele nu pot fi scrise aici.
+ - BARA DE JOS (Rosu/Galben/Verde): Indica gradul de fragmentare al discului.
+
+[3] CONTROALE SI COMENZI
+ [A] Adauga Fisier: Porneste fereastra de creare (ID -> Dimensiune -> Nume).
+     * Numele terminat in '.sys' creeaza SystemFile, '.tmp' creeaza TempFile. Orice altceva este tratat ca UserFile
+ [S] Sterge Fisier: Elimina un fisier dupa ID si elibereaza blocurile. (Cu exceptia fiserelor System)
+ [T] Trunchiaza: Reduce dimensiunea unui fisier existent.
+ [E] Extinde: Mareste dimensiunea unui fisier (poate cauza fragmentare).
+ [D] Defragmenteaza: Porneste algoritmul vizual de defragmentare a datelor.
+ [R] Mentenanta: Sterge fisierele temporare (.tmp) daca spatiul disponibil este sub un anumit procent si muta blocurile fisierelor de pe cele stricate.
+ [V] Verificare: Ruleaza Checksum pentru a gasi erori (Feedback in consola).
+ [CLICK STANGA]: Marcheaza un bloc ca fiind stricat.
+ [SCROLL/MIDDLE CLICK]: Zoom si navigare pe harta discului.
+
+[4] SCENARIU
+ Pentru a putea observa algoritmul de defragmentare propun urmatorul scenariu:
+  1 - se creaza 3 fisiere (fara .sys in nume) de minim 150 de blocuri fiecare cu id-uri de forma xx1, xx2, xx3.
+  2 - se trunchiaza primul si cel de al doilea fisier (cu id-ul xx1 si xx2).
+  3 - se apasa tasta D si se urmaresc statisticile.
+
+APASA TASTA [H] SAU [ESC] PENTRU A REVENI LA SIMULARE.)";
+
+    content.setString(helpText);
+    window.draw(content);
+}
+
 void GUI::handleSubmitExtend() {
     if (inputText.empty()) {
         return;
@@ -725,7 +783,9 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table) 
     legendText.setFont(font);
     legendText.setCharacterSize(20);
     legendText.setFillColor(sf::Color::White);
-    legendText.setString("CONTROALE:\n "
+    legendText.setOutlineColor(sf::Color::Black);
+    legendText.setOutlineThickness(1.f);
+    legendText.setString("CONTROALE: (H - HELP)\n "
         "A - Adauga Fisier\n"
         " S - Sterge Fisier\n"
         " D - Defragmenteaza\n"
@@ -747,6 +807,8 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table) 
 
     dashBoardText.setFont(font);
     dashBoardText.setCharacterSize(20);
+    dashBoardText.setOutlineColor(sf::Color::Black);
+    dashBoardText.setOutlineThickness(1.f);
     dashBoardText.setFillColor(sf::Color::White);
     dashBoardText.setPosition(10.f,SCREEN_HEIGHT - 420.f);
 
@@ -858,6 +920,13 @@ void GUI::run() {
 
                         case sf::Keyboard::X: {
                             window.close();
+                            break;
+                        }
+
+                        case sf::Keyboard::H: {
+                            if (currentState == NORMAL) {
+                                currentState = HELP;
+                            }
                             break;
                         }
 
@@ -1032,6 +1101,12 @@ void GUI::run() {
                         default: break;
                     }
                 }
+
+                else if (currentState == HELP) {
+                    if (event.key.code == sf::Keyboard::H || event.key.code == sf::Keyboard::Escape) {
+                        currentState = NORMAL;
+                    }
+                }
             } else if (event.type == sf::Event::MouseButtonPressed) {
                 if (currentState == NORMAL) {
                     if (event.mouseButton.button == sf::Mouse::Left) {
@@ -1122,6 +1197,11 @@ void GUI::run() {
         window.draw(legendText);
         drawToolTip();
         drawMiniMap(static_cast<float>(pulse));
+
+        if (currentState == HELP) {
+            drawHelpScreen();
+        }
+
         window.display();
     }
 }

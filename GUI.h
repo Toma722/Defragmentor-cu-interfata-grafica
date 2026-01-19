@@ -12,7 +12,7 @@
 
 enum GuiState {
     NORMAL, INPUT_DELETE, INPUT_ADD_ID, INPUT_ADD_SIZE, INPUT_ADD_NAME, INPUT_TRUNCATE_ADD_ID, INPUT_TRUNCATE, INPUT_EXTEND,
-    INPUT_EXTEND_ADD_ID, DEFRAGMENTING, DEFRAGMENTATION_ANIMATION
+    INPUT_EXTEND_ADD_ID, DEFRAGMENTING, DEFRAGMENTATION_ANIMATION, HELP
 };
 
 class GUI {
@@ -61,6 +61,8 @@ class GUI {
         void runDefragmentAnimation();
 
         sf::Vector2f getPixelPosition(int index) const;
+
+        void drawHelpScreen();
 
         void handleSubmitExtend();
 
