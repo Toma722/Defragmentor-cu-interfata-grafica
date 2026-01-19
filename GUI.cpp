@@ -571,18 +571,25 @@ void GUI::updateAndDrawDashBoard() {
 
     fragmentationStats.addValue(fragmentationPercentage);
 
+    std::string statsStr = "STATISTICI DISC:\nFisiere Active: " + std::to_string(activeFiles) +
+                           "\nTotal: " + std::to_string(numOfTotalBlocks) +
+                           " blocuri\nLiber: " + std::to_string(numOfFreeBlocks) + " blocuri\nOcupate: " +
+                           std::to_string(numOfUsedBlocks)
+                           + " blocuri\nStricate: " + std::to_string(numOfBadBlocks) + " blocuri\nFragmentare: " +
+                           std::to_string(fragmentationPercentage) + "%";
+
+    statsStr += "\nISTORIC \n";
+    statsStr += "Fragmentare maxima: " + std::to_string(fragmentationStats.getMax()).substr(0, 4) +
+            "%\nFragmentare medie: " + std::to_string(fragmentationStats.getAverage()).substr(0, 4) +
+            "%\n" + "Cel mai mare fisier creat: " + std::to_string(fileSizeStats.getMax()) + " blocuri\n";
+
+    if (fileSizeStats.getCount() > 0) {
+        statsStr += "Cel mai mic fisier creat: " + std::to_string(fileSizeStats.getMin()) + " blocuri\n";
+        statsStr += "Medie fisiere: " + std::to_string(fileSizeStats.getAverage()).substr(0, 4) + " blocuri\n";
+    }
 
 
-    dashBoardText.setString("STATISTICI DISC:\nFisiere Active: " + std::to_string(activeFiles) +
-                            "\nTotal: " + std::to_string(numOfTotalBlocks) +
-                            " blocuri\nLiber: " + std::to_string(numOfFreeBlocks) + " blocuri\nOcupate: " +
-                            std::to_string(numOfUsedBlocks)
-                            + " blocuri\nStricate: " + std::to_string(numOfBadBlocks) + " blocuri\nFragmentare: " +
-                            std::to_string(fragmentationPercentage) + "%" +
-                            "\nISTORIC \nFragmentare maxima: " +
-                            std::to_string(fragmentationStats.getMax()).substr(0,4) + "%\n" +
-                            "Cel mai mare fisier creat: " +
-                            std::to_string(fileSizeStats.getMax()) + " blocuri");
+    dashBoardText.setString(statsStr);
 
     window.draw(dashBoardText);
 }
@@ -741,9 +748,9 @@ GUI::GUI(DiskSpaceMap &disk, AllocationTable &table) : disk(disk), table(table) 
     dashBoardText.setFont(font);
     dashBoardText.setCharacterSize(20);
     dashBoardText.setFillColor(sf::Color::White);
-    dashBoardText.setPosition(10.f,SCREEN_HEIGHT - 400.f);
+    dashBoardText.setPosition(10.f,SCREEN_HEIGHT - 420.f);
 
-    constexpr float ySpacing = 80.f;
+    constexpr float ySpacing = 150.f;
 
     const float barX = dashBoardText.getPosition().x;
     const float barY = dashBoardText.getGlobalBounds().height + dashBoardText.getPosition().y + 160.f + ySpacing;
