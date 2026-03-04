@@ -37,7 +37,7 @@ Acest program simuleaza vizual un sistem de fisiere si alocarea blocurilor pe di
 Scopul este intelegerea fragmentarii si a algoritmilor de defragmentare.
 
 [2] CULORI SI SEMNIFICATII
- - BLOCURI GRI: Spatiu liber (nealocat).
+ - BLOCURI ALBASTRE INCHIS: Spatiu liber (nealocat).
  - BLOCURI COLORATE: Fisiere active. Culoarea este generata pe baza ID-ului.
  - BLOCURI NEGRE: Blocuri defecte. Datele nu pot fi scrise aici.
  - BARA DE JOS (Rosu/Galben/Verde): Indica gradul de fragmentare al discului.

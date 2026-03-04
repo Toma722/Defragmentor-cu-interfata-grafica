@@ -47,7 +47,7 @@ void UserFile::storagePriority(DiskSpaceMap &disk) {
 }
 
 void UserFile::applyMaintenance(DiskSpaceMap &disk) {
-    if (disk.getFragmentationPercentage() > 0.5 && this->getOwnerName() == "Guest") {
+    if (disk.getFragmentationPercentage() > 0.8 && this->getOwnerName() == "Guest") {
         markedForDeletion = true;
     }
 

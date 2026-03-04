@@ -1,171 +1,87 @@
-## DEFRAGMENTOR CU INTERFATA GRAFICA
+# Virtual Disk Space Manager & Defragmenter
 
+This project visually simulates a file system, focusing on essential data management functions: creating, deleting, expanding, and truncating files.
 
+The system integrates a checksum integrity verification mechanism capable of identifying corrupted data.
 
-### Scurta descriere: 
+The application is fully interactive, allowing the user to manage the simulated disk through a Graphical User Interface (GUI). It provides real-time visual feedback on how different files (System, User, or Temp) are allocated, monitors the degree of disk fragmentation, and executes maintenance routines to optimize storage space.
 
-Acest proiect simuleaza vizual un sistem de fisiere, în care se regasesc functionalitatile
-esentiale de gestionare a datelor: crearea, stergerea, extinderea si trunchierea fisierelor.
-Sistemul integreaza un mecanism de verificare a integritatii prin Checksum capabil sa identifice erori.
-Aplicatia este interactiva, permitand utilizatorului sa interactioneze cu discul simulat
-prin intermediul interfetei grafice (GUI). Aceasta ofera feedback vizual in timp real 
-asupra modului in care fisierele (de tip System, User sau Temp) sunt alocate, 
-monitorizeaza gradul de fragmentare si permite executia unor procese de mentenanta 
-pentru optimizarea spatiului de stocare.
+## Colors and Meanings
+* **DARK BLUE BLOCKS:** Free space (unallocated).
+* **COLORED BLOCKS:** Active files. The color is generated based on the ID.
+* **BLACK BLOCKS:** Bad blocks. Data cannot be written here.
+* **BOTTOM BAR (Red/Yellow/Green):** Indicates the degree of disk fragmentation.
 
-### Tema 0
+![Main Disk View](Screenshots/Screenshot.png)
 
-- [X] Nume proiect (poate fi schimbat ulterior)
-- [X] Scurtă descriere a temei alese, ce v-ați propus să implementați
+## Controls and Commands
+* `[A]` **Add File:** Opens the creation window (ID -> Size -> Name).
+    * *Names ending in '.sys' create SystemFiles, '.tmp' creates TempFiles. Anything else is treated as a UserFile.*
+* `[S]` **Delete File:** Deletes a file by ID and frees up the blocks. (Except for System files)
+* `[T]` **Trim:** Reduces the size of an existing file.
+* `[E]` **Expand:** Increases the size of a file (may cause fragmentation).
+* `[D]` **Defragment:** Starts the visual data defragmentation algorithm.
+* `[R]` **Maintenance:** Deletes temporary files (.tmp) if the available space is below a certain percentage and moves the blocks of files from the damaged ones.
+* `[V]` **Verify:** Runs Checksum to find errors (Feedback in console).
+* `[LEFT CLICK]:` Marks a block as corrupted.
+* `[SCROLL/MIDDLE CLICK]:` Zoom and navigate the disk map.
 
-## Tema 1
+## Scenario
+To observe the defragmentation algorithm, I propose the following scenario:
+1. Create 3 files (without `.sys` in the name) of at least 150 blocks each with IDs in the form `xx1`, `xx2`, `xx3`.
+2. Truncate the first and second files (with IDs `xx1` and `xx2`).
+3. Press the `D` key and watch the statistics.
 
-#### Cerințe
-- [X] definirea a minim **3-4 clase** folosind compunere cu clasele definite de voi; moștenirile nu se iau în considerare aici
-- [X] constructori de inițializare cu parametri pentru fiecare clasă
-- [X] pentru o aceeași (singură) clasă: constructor de copiere, `operator=` de copiere, destructor
-<!-- - [X] pentru o altă clasă: constructor de mutare, `operator=` de mutare, destructor -->
-<!-- - [X] pentru o altă clasă: toate cele 5 funcții membru speciale -->
-- [X] `operator<<` pentru **toate** clasele pentru afișare (`std::ostream`) folosind compunere de apeluri cu `operator<<`
-- [X] cât mai multe `const` (unde este cazul) și funcții `private`
-- [X] implementarea a minim 3 funcții membru publice pentru funcționalități netriviale specifice temei alese, dintre care cel puțin 1-2 funcții mai complexe
-  - nu doar citiri/afișări sau adăugat/șters elemente într-un/dintr-un vector
-- [X] scenariu de utilizare **cu sens** a claselor definite:
-  - crearea de obiecte și apelarea tuturor funcțiilor membru publice în main
-  - vor fi adăugate în fișierul `tastatura.txt` DOAR exemple de date de intrare de la tastatură (dacă există); dacă aveți nevoie de date din fișiere, creați alte fișiere separat
-- [X] minim 50-55% din codul propriu să fie C++, `.gitattributes` configurat corect
-- [X] tag de `git`: de exemplu `v0.1`
-- [X] serviciu de integrare continuă (CI) cu **toate bifele**; exemplu: GitHub Actions
-- [ ] code review #1 2 proiecte
+---
 
-## Tema 2
+## Build Instructions
 
-#### Cerințe
-- [X] separarea codului din clase în `.h` (sau `.hpp`) și `.cpp`
-- [X] moșteniri:
-  - minim o clasă de bază și **3 clase derivate** din aceeași ierarhie
-  - ierarhia trebuie să fie cu bază proprie, nu derivată dintr-o clasă predefinită
-  - [X] funcții virtuale (pure) apelate prin pointeri de bază din clasa care conține atributul de tip pointer de bază
-    - minim o funcție virtuală va fi **specifică temei** (i.e. nu simple citiri/afișări sau preluate din biblioteci i.e. draw/update/render)
-    - constructori virtuali (clone): sunt necesari, dar nu se consideră funcții specifice temei
-    - afișare virtuală, interfață non-virtuală
-  - [X] apelarea constructorului din clasa de bază din constructori din derivate
-  - [X] clasă cu atribut de tip pointer la o clasă de bază cu derivate; aici apelați funcțiile virtuale prin pointer de bază, eventual prin interfața non-virtuală din bază
-    - [X] suprascris cc/op= pentru copieri/atribuiri corecte, copy and swap
-    - [X] `dynamic_cast`/`std::dynamic_pointer_cast` pentru downcast cu sens
-    - [X] smart pointers (recomandat, opțional)
-- [X] excepții
-  - [X] ierarhie proprie cu baza `std::exception` sau derivată din `std::exception`; minim **3** clase pentru erori specifice distincte
-    - clasele de excepții trebuie să trateze categorii de erori distincte (exemplu de erori echivalente: citire fișiere cu diverse extensii)
-  - [X] utilizare cu sens: de exemplu, `throw` în constructor (sau funcție care întoarce un obiect), `try`/`catch` în `main`
-  - această ierarhie va fi complet independentă de ierarhia cu funcții virtuale
-- [X] funcții și atribute `static`
-- [X] STL
-- [X] cât mai multe `const`
-- [X] funcții *de nivel înalt*, de eliminat cât mai mulți getters/setters/funcții low-level
-- [X] minim 75-80% din codul propriu să fie C++
-- [ ] la sfârșit: commit separat cu adăugarea unei noi clase derivate fără a modifica restul codului, **pe lângă cele 3 derivate deja adăugate** din aceeași ierarhie
-  - noua derivată nu poate fi una existentă care a fost ștearsă și adăugată din nou
-  - noua derivată va fi integrată în codul existent (adică va fi folosită, nu adăugată doar ca să fie)
-- [X] tag de `git` pe commit cu **toate bifele**: de exemplu `v0.2`
-- [ ] code review #2 2 proiecte
+The project is configured using CMake.
 
-## Tema 3
-
-#### Cerințe
-- [X] 2 șabloane de proiectare (design patterns)
-- [X] o clasă șablon cu sens; minim **2 instanțieri**
-  - [X] preferabil și o funcție șablon (template) cu sens; minim 2 instanțieri
-- [X] minim 85% din codul propriu să fie C++
-<!-- - [X] o specializare pe funcție/clasă șablon -->
-- [X] tag de `git` pe commit cu **toate bifele**: de exemplu `v0.3` sau `v1.0`
-- [ ] code review #3 2 proiecte
-  
-## Instrucțiuni de compilare
-
-Proiectul este configurat cu CMake.
-
-Instrucțiuni pentru terminal:
-
-1. Pasul de configurare
+**1. Configuration** Run the following command in your terminal to generate the build files:
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-# sau ./scripts/cmake.sh configure
 ```
-
-Sau pe Windows cu GCC folosind Git Bash:
+*For Windows users with GCC via Git Bash, use the Ninja generator:*
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja
-# sau ./scripts/cmake.sh configure -g Ninja
 ```
-
-Pentru a configura cu ASan, avem opțiunea `-DUSE_ASAN=ON` (nu merge pe Windows cu GCC):
+*To configure with AddressSanitizer (ASan) on Linux/macOS:*
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DUSE_ASAN=ON
-# sau ./scripts/cmake.sh configure -e "-DUSE_ASAN=ON"
 ```
 
-
-La acest pas putem cere să generăm fișiere de proiect pentru diverse medii de lucru.
-
-
-2. Pasul de compilare
+**2. Compilation** Compile the project using parallel jobs for faster build times:
 ```sh
 cmake --build build --config Debug --parallel 6
-# sau ./scripts/cmake.sh build
 ```
 
-Cu opțiunea `parallel` specificăm numărul de fișiere compilate în paralel.
-
-
-3. Pasul de instalare (opțional)
-```sh
+**3. Installation (Optional)** ```sh
 cmake --install build --config Debug --prefix install_dir
-# sau ./scripts/cmake.sh install
 ```
 
-Vezi și [`scripts/cmake.sh`](scripts/cmake.sh).
+## Running the Application
 
-Observație: folderele `build/` și `install_dir/` sunt adăugate în fișierul `.gitignore` deoarece
-conțin fișiere generate și nu ne ajută să le versionăm.
-
-
-## Instrucțiuni pentru a rula executabilul
-
-Există mai multe variante:
-
-1. Din directorul de build (implicit `build`). Executabilul se află la locația `./build/oop` după ce a fost rulat pasul de compilare al proiectului (`./scripts/cmake.sh build` - pasul 2 de mai sus).
-
+You can run the executable directly from the build directory:
 ```sh
 ./build/oop
 ```
-
-2. Din directorul `install_dir`. Executabilul se află la locația `./install_dir/bin/oop` după ce a fost rulat pasul de instalare (`./scripts/cmake.sh install` - pasul 3 de mai sus).
-
+Or from the installation directory (if step 3 was executed):
 ```sh
 ./install_dir/bin/oop
 ```
 
-3. Rularea programului folosind Valgrind se poate face executând script-ul `./scripts/run_valgrind.sh` din rădăcina proiectului. Pe Windows acest script se poate rula folosind WSL (Windows Subsystem for Linux). Valgrind se poate rula în modul interactiv folosind: `RUN_INTERACTIVE=true ./scripts/run_valgrind.sh`
-
-Implicit, nu se rulează interactiv, iar datele pentru `std::cin` sunt preluate din fișierul `tastatura.txt`.
-
+**Memory Leak Testing (Valgrind)** To run the program with Valgrind (Linux/WSL), use the provided script:
 ```sh
-RUN_INTERACTIVE=true ./scripts/run_valgrind.sh
-# sau
 ./scripts/run_valgrind.sh
 ```
-
-4. Pentru a rula executabilul folosind ASan, este nevoie ca la pasul de configurare (vezi mai sus) să fie activat acest sanitizer. Ar trebui să meargă pe macOS și Linux. Pentru Windows, ar merge doar cu MSVC (nerecomandat).
-
-Comanda este aceeași ca la pasul 1 sau 2. Nu merge combinat cu Valgrind.
-
+To run Valgrind in interactive mode:
 ```sh
-./build/oop
-# sau
-./install_dir/bin/oop
+RUN_INTERACTIVE=true ./scripts/run_valgrind.sh
 ```
 
-## Resurse
 
-- adăugați trimiteri **detaliate** către resursele externe care v-au ajutat sau pe care le-ați folosit
+
+
+
+
